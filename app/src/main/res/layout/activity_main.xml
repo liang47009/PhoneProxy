@@ -10,7 +10,7 @@
         android:id="@+id/proxy_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
+        android:text="@string/wait_for_start"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintBottom_toTopOf="@id/start_proxy"
         app:layout_constraintLeft_toLeftOf="parent"

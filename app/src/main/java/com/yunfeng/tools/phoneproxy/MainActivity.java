@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.yunfeng.tools.phoneproxy.http.HttpsServer;
@@ -62,7 +63,8 @@ public class MainActivity extends AppCompatActivity {
         if (start_server) {
             start_server = false;
             HttpsServer.stop();
-            tv.setText(getText(R.string.start_proxy));
+            tv.setText(R.string.stoped);
+            ((Button) view).setText(getText(R.string.start_proxy));
         } else {
             start_server = true;
             Cert.init(this);
@@ -85,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             tv.setText(Utils.getLocalIpAddress() + ":8888");
+            ((Button) view).setText(getText(R.string.stop_proxy));
         }
     }
 
