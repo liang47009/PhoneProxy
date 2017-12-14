@@ -1,5 +1,7 @@
 package com.yunfeng.tools.phoneproxy.http;
 
+import android.content.Context;
+
 import com.yunfeng.tools.phoneproxy.util.Log;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -26,39 +28,46 @@ public class HttpsServer {
     private static boolean b_exit = false;
     private static HttpsSocket httpsSocket;
     private static SSLServerSocket _socket;
+    public static boolean started = false;
 
-    public static void startup(InputStream ksIn) {
-        try {
-            System.setProperty("javax.net.debug", "SSL,handshake,data,trustmanager");
-            Security.addProvider(new BouncyCastleProvider());
-            SSLContext context = SSLContext.getInstance("TLS");
-            KeyStore ks = KeyStore.getInstance("BKS", "BC");
-            ks.load(ksIn, "a123456".toCharArray());
-            String algorithm = KeyManagerFactory.getDefaultAlgorithm();
-            KeyManagerFactory kf = KeyManagerFactory.getInstance(algorithm);
+    public static void startup(final String host, final int port, final Context ctx) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    b_exit = false;
+                    System.setProperty("javax.net.debug", "SSL,handshake,data,trustmanager");
+                    Security.addProvider(new BouncyCastleProvider());
+                    InputStream ksIn = ctx.getAssets().open("server.bks");
+                    SSLContext context = SSLContext.getInstance("TLS");
+                    KeyStore ks = KeyStore.getInstance("BKS", "BC");
+                    ks.load(ksIn, "a123456".toCharArray());
+                    String algorithm = KeyManagerFactory.getDefaultAlgorithm();
+                    KeyManagerFactory kf = KeyManagerFactory.getInstance(algorithm);
 
-            InputStream trustIn = HttpsServer.class.getClassLoader()
-                    .getResourceAsStream("client.bks");
-            KeyStore ksTrust = KeyStore.getInstance("BKS", "BC");
-            ksTrust.load(trustIn, "a123456".toCharArray());
-            TrustManagerFactory tmf = TrustManagerFactory
-                    .getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            tmf.init(ksTrust);
+                    InputStream trustIn = ctx.getAssets().open("client.bks");
+                    KeyStore ksTrust = KeyStore.getInstance("BKS", "BC");
+                    ksTrust.load(trustIn, "a123456".toCharArray());
+                    TrustManagerFactory tmf = TrustManagerFactory
+                            .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                    tmf.init(ksTrust);
 
-            kf.init(ks, "a123456".toCharArray());
-            context.init(kf.getKeyManagers(), tmf.getTrustManagers(), null);
+                    kf.init(ks, "a123456".toCharArray());
+                    context.init(kf.getKeyManagers(), tmf.getTrustManagers(), null);
 
-            ServerSocketFactory factory = context.getServerSocketFactory();
-            _socket = (SSLServerSocket) factory.createServerSocket(8888);
-            _socket.setNeedClientAuth(false);
-            while (!b_exit) {
-                httpsSocket = new HttpsSocket(_socket.accept());
-                httpsSocket.start();
+                    ServerSocketFactory factory = context.getServerSocketFactory();
+                    _socket = (SSLServerSocket) factory.createServerSocket(port);
+                    _socket.setNeedClientAuth(false);
+                    started = true;
+                    while (!b_exit) {
+                        httpsSocket = new HttpsSocket(_socket.accept());
+                        httpsSocket.start();
+                    }
+                } catch (Exception e) {
+                    Log.e("startup", e);
+                }
             }
-        } catch (Exception e) {
-            Log.d(e.getMessage());
-        }
-
+        }).start();
     }
 
     public static void stop() {
@@ -73,6 +82,7 @@ public class HttpsServer {
         if (null != httpsSocket) {
             httpsSocket.interrupt();
         }
+        started = false;
     }
 }
 

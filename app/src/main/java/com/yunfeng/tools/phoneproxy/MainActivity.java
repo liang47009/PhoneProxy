@@ -15,11 +15,15 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.yunfeng.tools.phoneproxy.http.HttpsServer;
 import com.yunfeng.tools.phoneproxy.socket.Cert;
 import com.yunfeng.tools.phoneproxy.socket.Server;
 import com.yunfeng.tools.phoneproxy.tool.RSAHelper;
 import com.yunfeng.tools.phoneproxy.util.Log;
 import com.yunfeng.tools.phoneproxy.util.Utils;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,7 +32,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_PERMISIONS = 0xffffff;
 
     private static final String[] permissions = new String[]{Manifest.permission.INTERNET, Manifest.permission.WRITE_EXTERNAL_STORAGE};
-    private Server server = new Server();
+    //    private Server server = new Server();
+    private HttpsServer server = new HttpsServer();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         Cert.init(this);
-        RSAHelper.main(null);
+//        RSAHelper.main(null);
     }
 
     @Override
@@ -104,12 +109,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startProxy(View view) {
-        if (server.started) {
-            server.stop();
+        if (HttpsServer.started) {
+            HttpsServer.stop();
             tv.setText(R.string.stoped);
             ((Button) view).setText(getText(R.string.start_proxy));
         } else {
-            server.startup("0.0.0.0", 8888);
+            HttpsServer.startup("0.0.0.0", 8888, this);
             tv.setText(Utils.getLocalIpAddress() + ":8888");
             ((Button) view).setText(getText(R.string.stop_proxy));
         }
