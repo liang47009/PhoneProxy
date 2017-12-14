@@ -10,11 +10,48 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
-    buildTypes {
+    //签名
+    signingConfigs {
+        debug {
+            keyAlias 'phoneproxy'
+            keyPassword 'xiayunfeng'
+            storeFile file('phoneproxy.jks')
+            storePassword 'xiayunfeng'
+        }
         release {
+            keyAlias 'phoneproxy'
+            keyPassword 'xiayunfeng'
+            storeFile file('phoneproxy.jks')
+            storePassword 'xiayunfeng'
+        }
+    }
+    buildTypes {
+        debug {
+            debuggable false
+            jniDebuggable false
+            signingConfig signingConfigs.release
+            renderscriptDebuggable false
             minifyEnabled false
+            pseudoLocalesEnabled false
+            zipAlignEnabled true
+            // dex突破65535的限制
+            multiDexEnabled true
+        }
+        release {
+            debuggable false
+            jniDebuggable false
+            signingConfig signingConfigs.release
+            renderscriptDebuggable false
+            minifyEnabled false
+            pseudoLocalesEnabled false
+            zipAlignEnabled true
+            // dex突破65535的限制
+            multiDexEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    lintOptions {
+        abortOnError false
     }
 }
 

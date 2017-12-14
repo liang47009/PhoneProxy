@@ -33,9 +33,9 @@ public class CertUtil {
     private static KeyFactory keyFactory = null;
     private static final long TEN_YEAR = TimeUnit.DAYS.toMillis(3650);
 
-    private static KeyFactory getKeyFactory() throws NoSuchAlgorithmException {
+    private static KeyFactory getKeyFactory() throws Exception {
         if (keyFactory == null) {
-            keyFactory = KeyFactory.getInstance("RSA");
+            keyFactory = KeyFactory.getInstance("RSA", "BC");
         }
         return keyFactory;
     }
@@ -51,8 +51,7 @@ public class CertUtil {
     }
 
     /**
-     * 从文件加载RSA私钥 openssl pkcs8 -topk8 -nocrypt -inform PEM -outform DER -in
-     * ca.key -out ca_private.pem
+     * 从文件加载RSA私钥 openssl pkcs8 -topk8 -nocrypt -inform PEM -outform DER -in ca.key -out ca_private.pem
      */
     public static PrivateKey loadPriKey(byte[] bts) throws Exception {
         EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(bts);
@@ -60,24 +59,21 @@ public class CertUtil {
     }
 
     /**
-     * 从文件加载RSA私钥 openssl pkcs8 -topk8 -nocrypt -inform PEM -outform DER -in
-     * ca.key -out ca_private.pem
+     * 从文件加载RSA私钥 openssl pkcs8 -topk8 -nocrypt -inform PEM -outform DER -in ca.key -out ca_private.pem
      */
 //	public static PrivateKey loadPriKey(String path) throws Exception {
 //		return loadPriKey(Files.readAllBytes(Paths.get(path)));
 //	}
 
     /**
-     * 从文件加载RSA私钥 openssl pkcs8 -topk8 -nocrypt -inform PEM -outform DER -in
-     * ca.key -out ca_private.pem
+     * 从文件加载RSA私钥 openssl pkcs8 -topk8 -nocrypt -inform PEM -outform DER -in ca.key -out ca_private.pem
      */
 //	public static PrivateKey loadPriKey(URI uri) throws Exception {
 //		return loadPriKey(Paths.get(uri).toString());
 //	}
 
     /**
-     * 从文件加载RSA私钥 openssl pkcs8 -topk8 -nocrypt -inform PEM -outform DER -in
-     * ca.key -out ca_private.pem
+     * 从文件加载RSA私钥 openssl pkcs8 -topk8 -nocrypt -inform PEM -outform DER -in ca.key -out ca_private.pem
      */
     public static PrivateKey loadPriKey(InputStream inputStream)
             throws Exception {
@@ -183,16 +179,24 @@ public class CertUtil {
     }
 
     /**
+     * 读取ssl证书使用者信息
+     */
+    public static String getSubject(String issuer,
+                                    PublicKey serverPubKey, PrivateKey caPriKey, String... hosts) throws Exception {
+        X509Certificate certificate = genCert(issuer, serverPubKey, caPriKey, hosts);
+        return certificate.getIssuerDN().toString();
+    }
+
+    /**
      * 动态生成服务器证书,并进行CA签授
      *
-     * @param issuer
-     *            颁发机构
+     * @param issuer 颁发机构
      */
     public static X509Certificate genCert(String issuer,
                                           PublicKey serverPubKey, PrivateKey caPriKey, String... hosts)
             throws Exception {
-		/*
-		 * String issuer = "C=CN, ST=GD, L=SZ, O=lee, OU=study, CN=ProxyeeRoot";
+        /*
+         * String issuer = "C=CN, ST=GD, L=SZ, O=lee, OU=study, CN=ProxyeeRoot";
 		 * String subject = "C=CN, ST=GD, L=SZ, O=lee, OU=study, CN=" + host;
 		 */
         // 根据CA证书subject来动态生成目标服务器证书的issuer和subject

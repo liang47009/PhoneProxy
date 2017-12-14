@@ -1,6 +1,7 @@
 package com.yunfeng.tools.phoneproxy.socket;
 
 import com.yunfeng.tools.phoneproxy.Log;
+import com.yunfeng.tools.phoneproxy.MyX509TrustManager;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -22,10 +23,17 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.ssl.PemX509Certificate;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.SSLEngine;
 
 @Sharable
 public class ServerHandler extends ChannelInboundHandlerAdapter {
@@ -103,10 +111,18 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
         } else if (msg instanceof ByteBuf) {
             ByteBuf bytebuf = (ByteBuf) msg;
             if (bytebuf.getByte(0) == 22) {
-                SslContext sslContext = SslContextBuilder.forServer(
-                        Cert.serverPriKey, Cert.getCert(this.host)).build();
+//                final X509Certificate cert = Cert.getCert(this.host);
+//                SslContext sslContext = SslContextBuilder.forServer(
+//                        Cert.serverPriKey, cert).sslContextProvider(Cert.provider).build();
+//                final X509Certificate[] trustCertCollection = {cert};
+//                SslContext sslContext = new BCSslContext(Cert.provider, null, null,
+//                        trustCertCollection, Cert.serverPriKey, null, null, 0, 0);
+                // Configure SSL.
+                final SslContext sslCtx = SslContextBuilder.forClient()
+                        .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
+
                 ctx.pipeline().addFirst(new HttpServerCodec());
-                ctx.pipeline().addFirst(sslContext.newHandler(ctx.alloc()));
+                ctx.pipeline().addFirst(sslCtx.newHandler(ctx.alloc()));
                 //重新过一遍pipeline，拿到解密后的的http报文
                 ctx.pipeline().fireChannelRead(msg);
             }

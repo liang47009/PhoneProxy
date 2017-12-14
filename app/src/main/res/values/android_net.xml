@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <string name="android_net_ok">确定</string>
+    <string name="android_net_connect_error">无法连接服务器</string>
+    <string name="android_net_connect_time_out_error">连接服务器超时</string>
+    <string name="android_net_response_error">服务器返回：</string>
+    <string name="android_net_error">出错啦</string>
+    <string name="android_net_out_of_memory">内存不足</string>
+</resources>

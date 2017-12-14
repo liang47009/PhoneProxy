@@ -3,8 +3,9 @@
 buildscript {
     
     repositories {
+        mavenLocal()
         maven{ url 'http://172.17.28.58:8081/nexus/content/groups/public/'}
-//        google()
+        google()
 //        jcenter()
     }
     dependencies {
@@ -18,8 +19,9 @@ buildscript {
 
 allprojects {
     repositories {
+        mavenLocal()
         maven{ url 'http://172.17.28.58:8081/nexus/content/groups/public/'}
-//        google()
+        google()
 //        jcenter()
     }
 }
