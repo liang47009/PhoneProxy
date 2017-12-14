@@ -41,12 +41,12 @@ public class CertUtil {
     }
 
     /**
-     * 生成RSA公私密钥对,长度为2048
+     * 生成RSA公私密钥对,长度为1024
      */
     public static KeyPair genKeyPair() throws Exception {
         KeyPairGenerator caKeyPairGen = KeyPairGenerator.getInstance("RSA",
                 "BC");
-        caKeyPairGen.initialize(2048, new SecureRandom());
+        caKeyPairGen.initialize(1024, new SecureRandom());
         return caKeyPairGen.genKeyPair();
     }
 

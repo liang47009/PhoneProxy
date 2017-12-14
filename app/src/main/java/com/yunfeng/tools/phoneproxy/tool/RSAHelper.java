@@ -70,7 +70,7 @@ public class RSAHelper {
         certGen.setNotAfter(endDate);
         certGen.setSubjectDN(dnname);
         certGen.setPublicKey(publicKey);
-        certGen.setSignatureAlgorithm("SHA1WITHRSA");
+        certGen.setSignatureAlgorithm("SHA256WithRSAEncryption");
         try {
             X509Certificate cert = certGen.generate(privateKey, "BC");
             return cert;

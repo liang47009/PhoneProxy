@@ -2,10 +2,13 @@ package com.yunfeng.tools.phoneproxy.socket;
 
 import android.content.Context;
 
+import com.yunfeng.tools.phoneproxy.tool.RSAHelper;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.InputStream;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
@@ -36,18 +39,27 @@ public class Cert {
 //                    Log.d("entry.key = " + entry.getKey() + "======" + "entry.value = " + entry.getValue());
 //                }
 //            }
-
-            // 生产一对随机公私钥用于网站SSL证书动态创建
-            KeyPair keyPair = CertUtil.genKeyPair();
-            serverPriKey = keyPair.getPrivate();
+            KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
+            // 密钥位数
+            keyPairGen.initialize(1024);
+            // 密钥对
+            KeyPair keyPair = keyPairGen.generateKeyPair();
+            // 公钥
             serverPubKey = keyPair.getPublic();
+            // 私钥
+            serverPriKey = keyPair.getPrivate();
+            caPriKey = serverPriKey;
+//            // 生产一对随机公私钥用于网站SSL证书动态创建
+//            KeyPair keyPair = CertUtil.genKeyPair();
+//            serverPriKey = keyPair.getPrivate();
+//            serverPubKey = keyPair.getPublic();
 
-            InputStream cin = context.getAssets().open("c");
+            InputStream cin = context.getAssets().open("client.cer");
             // 读取CA证书使用者信息
             issuer = CertUtil.getSubject(cin);
-            InputStream pin = context.getAssets().open("p");
-            // CA私钥用于给动态生成的网站SSL证书签证
-            caPriKey = CertUtil.loadPriKey(pin);
+//            InputStream pin = context.getAssets().open("client.p12");
+//            // CA私钥用于给动态生成的网站SSL证书签证
+//            caPriKey = CertUtil.loadPriKey(pin);
         } catch (Exception e) {
             e.printStackTrace();
         }

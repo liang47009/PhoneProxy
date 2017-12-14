@@ -15,13 +15,11 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
-import com.yunfeng.tools.phoneproxy.http.HttpsServer;
 import com.yunfeng.tools.phoneproxy.socket.Cert;
+import com.yunfeng.tools.phoneproxy.socket.Server;
+import com.yunfeng.tools.phoneproxy.tool.RSAHelper;
 import com.yunfeng.tools.phoneproxy.util.Log;
 import com.yunfeng.tools.phoneproxy.util.Utils;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_PERMISIONS = 0xffffff;
 
     private static final String[] permissions = new String[]{Manifest.permission.INTERNET, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    private Server server = new Server();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +85,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+        Cert.init(this);
+        RSAHelper.main(null);
     }
 
     @Override
@@ -102,35 +103,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private transient boolean start_server = false;
-
     public void startProxy(View view) {
-        if (start_server) {
-            start_server = false;
-            HttpsServer.stop();
+        if (server.started) {
+            server.stop();
             tv.setText(R.string.stoped);
             ((Button) view).setText(getText(R.string.start_proxy));
         } else {
-            start_server = true;
-            Cert.init(this);
-//        new Server().startup("0.0.0.0", 8888);
-            try {
-//            SecureChatServer.startup("0.0.0.0", 8888);
-//            HttpsMockServer.startup("0.0.0.0", 8888);
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            InputStream in = MainActivity.this.getAssets().open("server.bks");
-                            HttpsServer.startup(in);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).start();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            server.startup("0.0.0.0", 8888);
             tv.setText(Utils.getLocalIpAddress() + ":8888");
             ((Button) view).setText(getText(R.string.stop_proxy));
         }

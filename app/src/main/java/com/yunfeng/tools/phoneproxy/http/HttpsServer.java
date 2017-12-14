@@ -25,6 +25,7 @@ import javax.net.ssl.TrustManagerFactory;
 public class HttpsServer {
     private static boolean b_exit = false;
     private static HttpsSocket httpsSocket;
+    private static SSLServerSocket _socket;
 
     public static void startup(InputStream ksIn) {
         try {
@@ -48,8 +49,7 @@ public class HttpsServer {
             context.init(kf.getKeyManagers(), tmf.getTrustManagers(), null);
 
             ServerSocketFactory factory = context.getServerSocketFactory();
-            SSLServerSocket _socket = (SSLServerSocket) factory
-                    .createServerSocket(8888);
+            _socket = (SSLServerSocket) factory.createServerSocket(8888);
             _socket.setNeedClientAuth(false);
             while (!b_exit) {
                 httpsSocket = new HttpsSocket(_socket.accept());
@@ -63,6 +63,13 @@ public class HttpsServer {
 
     public static void stop() {
         b_exit = true;
+        if (_socket != null) {
+            try {
+                _socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         if (null != httpsSocket) {
             httpsSocket.interrupt();
         }

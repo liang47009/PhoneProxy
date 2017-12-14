@@ -1,5 +1,7 @@
 package com.yunfeng.tools.phoneproxy.socket;
 
+import android.text.TextUtils;
+
 import com.yunfeng.tools.phoneproxy.util.Log;
 
 import io.netty.bootstrap.Bootstrap;
@@ -27,6 +29,7 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 import java.io.IOException;
+import java.security.cert.X509Certificate;
 
 @Sharable
 public class ServerHandler extends ChannelInboundHandlerAdapter {
@@ -104,20 +107,24 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
         } else if (msg instanceof ByteBuf) {
             ByteBuf bytebuf = (ByteBuf) msg;
             if (bytebuf.getByte(0) == 22) {
-//                final X509Certificate cert = Cert.getCert(this.host);
+                if (TextUtils.isEmpty(this.host)) {
+                    Log.d("error, cant get host");
+                } else {
+                    final X509Certificate cert = Cert.getCert(this.host);
 //                SslContext sslContext = SslContextBuilder.forServer(
 //                        Cert.serverPriKey, cert).sslContextProvider(Cert.provider).build();
-//                final X509Certificate[] trustCertCollection = {cert};
-//                SslContext sslContext = new BCSslContext(Cert.provider, null, null,
-//                        trustCertCollection, Cert.serverPriKey, null, null, 0, 0);
-                // Configure SSL.
-                final SslContext sslCtx = SslContextBuilder.forClient()
-                        .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
+                    final X509Certificate[] trustCertCollection = {cert};
+                    SslContext sslContext = new BCSslContext(Cert.provider, trustCertCollection, null,
+                            trustCertCollection, Cert.serverPriKey, null, null, 0, 0);
+                    // Configure SSL.
+//                final SslContext sslContext = SslContextBuilder.forClient()
+//                        .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
 
-                ctx.pipeline().addFirst(new HttpServerCodec());
-                ctx.pipeline().addFirst(sslCtx.newHandler(ctx.alloc()));
-                //重新过一遍pipeline，拿到解密后的的http报文
-                ctx.pipeline().fireChannelRead(msg);
+                    ctx.pipeline().addFirst(new HttpServerCodec());
+                    ctx.pipeline().addFirst(sslContext.newHandler(ctx.alloc()));
+                    //重新过一遍pipeline，拿到解密后的的http报文
+                    ctx.pipeline().fireChannelRead(msg);
+                }
             }
         } else {
             if (cf == null) {
