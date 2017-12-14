@@ -1,6 +1,6 @@
 package com.yunfeng.tools.phoneproxy.tool;
 
-import com.yunfeng.tools.phoneproxy.Log;
+import com.yunfeng.tools.phoneproxy.util.Log;
 
 import org.bouncycastle.util.encoders.Base64Encoder;
 import org.bouncycastle.x509.X509V1CertificateGenerator;

@@ -1,7 +1,6 @@
 package com.yunfeng.tools.phoneproxy.socket;
 
-import com.yunfeng.tools.phoneproxy.Log;
-import com.yunfeng.tools.phoneproxy.MyX509TrustManager;
+import com.yunfeng.tools.phoneproxy.util.Log;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -23,17 +22,11 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import io.netty.handler.ssl.PemX509Certificate;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
-import java.io.File;
 import java.io.IOException;
-import java.security.cert.X509Certificate;
-
-import javax.net.ssl.SSLEngine;
 
 @Sharable
 public class ServerHandler extends ChannelInboundHandlerAdapter {

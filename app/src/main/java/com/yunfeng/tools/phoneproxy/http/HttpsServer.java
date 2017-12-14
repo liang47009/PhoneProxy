@@ -1,6 +1,6 @@
 package com.yunfeng.tools.phoneproxy.http;
 
-import com.yunfeng.tools.phoneproxy.Log;
+import com.yunfeng.tools.phoneproxy.util.Log;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 

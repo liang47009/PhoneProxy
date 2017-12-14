@@ -3,6 +3,6 @@
     <string name="start_proxy">Start Proxy</string>
     <string name="stop_proxy">Stop Proxy</string>
     <string name="localhost">0.0.0.0:8888</string>
-    <string name="stoped">Proxy has stop!</string>
+    <string name="stoped">Proxy has stopped!</string>
     <string name="wait_for_start">Wait for start</string>
 </resources>
