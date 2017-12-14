@@ -35,6 +35,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        MobileAds.initialize(this, "ca-app-pub-9683268735381992~5860363867");
+
         // Load an ad into the AdMob banner view.
         AdView adView = (AdView) findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
@@ -72,8 +75,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("onAdClosed");
             }
         });
-
-        MobileAds.initialize(this, "ca-app-pub-9683268735381992~5860363867");
 
         tv = (TextView) findViewById(R.id.proxy_info);
 
