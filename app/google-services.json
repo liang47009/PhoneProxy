@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "193460740716",
+    "firebase_url": "https://phone-proxy-12186.firebaseio.com",
+    "project_id": "phone-proxy-12186",
+    "storage_bucket": "phone-proxy-12186.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:193460740716:android:784a51a45e069ccb",
+        "android_client_info": {
+          "package_name": "com.yunfeng.tools.phoneproxy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "193460740716-quqar2gkb6tdlgfc799k2af2g185u817.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXVgS2xYDy2BTwU_SlYT-pu9sRL1HTtD0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
