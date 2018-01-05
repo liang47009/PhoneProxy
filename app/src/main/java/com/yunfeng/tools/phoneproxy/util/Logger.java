@@ -5,7 +5,7 @@ package com.yunfeng.tools.phoneproxy.util;
  * log
  * Created by xll on 2017/12/5.
  */
-public class Log {
+public class Logger {
 
     public static void d(Object msg) {
         android.util.Log.d("PhoneProxy", msg.toString());
