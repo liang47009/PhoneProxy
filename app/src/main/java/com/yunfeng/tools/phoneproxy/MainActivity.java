@@ -182,6 +182,7 @@ public class MainActivity extends AppCompatActivity implements ProxyEventListene
     }
 
     public void startProxy(View view) {
+        view.setEnabled(false);
         SocketProxy.startup(this);
     }
 
