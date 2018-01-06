@@ -168,9 +168,9 @@ public class MainActivity extends AppCompatActivity implements ProxyEventListene
                             String hostName = ia.getHostName();
                             Logger.d("addr: " + addr + ", hostName: " + hostName);
                             Map<String, Object> listem = new HashMap<String, Object>();
+                            listem.put("name", addr);
+                            listem.put("desc", hostName);
                             listem.put("head", android.R.drawable.btn_default);
-                            listem.put("name", hostName);
-                            listem.put("desc", addr);
                             listems.add(listem);
                         }
                     }
