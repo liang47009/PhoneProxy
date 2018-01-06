@@ -204,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements ProxyEventListene
                     MainActivity.this.totalUpStream += data.getUpStream();
                     MainActivity.this.totalDownStream += data.getDownStream();
                     TextView view = (TextView) MainActivity.this.findViewById(R.id.data_textView);
-                    view.setText(String.format(Locale.CHINA, "TotalUpStream: %d \r\n TotalDownStream: %d",
+                    view.setText(String.format(Locale.CHINA, "TotalUpStream: %d \r\nTotalDownStream: %d",
                             MainActivity.this.totalUpStream, MainActivity.this.totalDownStream));
                 }
             });
