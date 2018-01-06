@@ -1,6 +1,8 @@
 package com.yunfeng.tools.phoneproxy.http;
 
+import com.yunfeng.tools.phoneproxy.MainActivity;
 import com.yunfeng.tools.phoneproxy.util.Logger;
+import com.yunfeng.tools.phoneproxy.view.ProxyEventListener;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -18,7 +20,7 @@ public class SocketProxy {
     private static final int listenPort = 8888;
     private static final ExecutorService executorService = Executors.newCachedThreadPool();
 
-    public static void startup() {
+    public static void startup(final ProxyEventListener listener) {
         executorService.execute(new Runnable() {
             @Override
             public void run() {
@@ -32,7 +34,7 @@ public class SocketProxy {
                             Socket socket = serverSocket.accept();
                             socket.setKeepAlive(true);
                             //加入任务列表，等待处理
-                            executorService.execute(new ProxyTask(socket));
+                            executorService.execute(new ProxyTask(socket, listener));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

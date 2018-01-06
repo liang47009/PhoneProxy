@@ -8,4 +8,8 @@
     <!-- -    This is an ad unit ID for a banner test ad. Replace with your own banner ad unit id.
     For more information, see https://support.google.com/admob/answer/3052638    -->
     <string name="banner_ad_unit_id">ca-app-pub-9683268735381992/9310268686</string>
+    <string name="clear_log">Clear Log</string>
+    <string name="this_is_log">This is log</string>
+    <string name="this_is_all_data_statistics">This is all data statistics</string>
+    <string name="asset_statements" translatable="false">[{\n  \"relation\": [\"delegate_permission/common.handle_all_urls\"],\n  \"target\": {\n    \"namespace\": \"web\",\n    \"site\": \"https://phoneproxy.tools.yunfeng.com\",\n  }\n}]</string>
 </resources>

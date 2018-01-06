@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "193460740716-hi5mmbnrv88b0h5233ut7b2lgl39i29p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.yunfeng.tools.phoneproxy",
+            "certificate_hash": "9c22a716573aaa9078ae698a72c639a16a539734"
+          }
+        },
+        {
           "client_id": "193460740716-quqar2gkb6tdlgfc799k2af2g185u817.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,8 +37,13 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "193460740716-quqar2gkb6tdlgfc799k2af2g185u817.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
           "status": 2

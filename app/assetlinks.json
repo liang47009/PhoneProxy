@@ -1,0 +1,25 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.yunfeng.tools.phoneproxy",
+    "sha256_cert_fingerprints":
+    ["68:85:A8:5D:6F:C1:FB:66:88:BD:73:4E:EB:ED:14:F2:F1:65:AF:C6:BA:9B:1A:F1:3F:16:4A:88:6C:D7:48:14"]
+  }
+},
+{
+  "relation": ["delegate_permission/common.get_login_creds"],
+  "target": {
+    "namespace": "web",
+    "site": "https://phoneproxy.tools.yunfeng.com"
+  }
+},
+{
+  "relation": ["delegate_permission/common.get_login_creds"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.yunfeng.tools.phoneproxy",
+    "sha256_cert_fingerprints":
+    ["68:85:A8:5D:6F:C1:FB:66:88:BD:73:4E:EB:ED:14:F2:F1:65:AF:C6:BA:9B:1A:F1:3F:16:4A:88:6C:D7:48:14"]
+  }
+}]

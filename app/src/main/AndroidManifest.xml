@@ -3,16 +3,18 @@
     package="com.yunfeng.tools.phoneproxy">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
+        android:name="com.yunfeng.tools.phoneproxy.App"
         android:allowBackup="true"
         android:icon="@mipmap/icon"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:name="com.yunfeng.tools.phoneproxy.App"
         android:theme="@style/AppTheme">
+        <meta-data
+            android:name="asset_statements"
+            android:resource="@string/asset_statements" />
         <activity
             android:name="com.yunfeng.tools.phoneproxy.MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|locale|layoutDirection"
@@ -23,6 +25,17 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="phoneproxy.tools.yunfeng.com"
+                    android:pathPattern="/pp"
+                    android:scheme="http" />
             </intent-filter>
         </activity>
     </application>

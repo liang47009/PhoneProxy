@@ -1,6 +1,8 @@
 package com.yunfeng.tools.phoneproxy.http;
 
-import com.yunfeng.tools.phoneproxy.util.Logger;
+import com.yunfeng.tools.phoneproxy.view.DataEventObject;
+import com.yunfeng.tools.phoneproxy.view.ProxyEvent;
+import com.yunfeng.tools.phoneproxy.view.ProxyEventListener;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,12 +20,14 @@ public final class ProxyTask implements Runnable {
     private Socket socketOut;
     private long totalUpload = 0l;//总计上行比特数
     private long totalDownload = 0l;//总计下行比特数
+    private ProxyEventListener listener;
 
-    public ProxyTask(Socket socket) {
+    public ProxyTask(Socket socket, ProxyEventListener listener) {
         this.socketIn = socket;
+        this.listener = listener;
     }
 
-    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.CHINA);
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA);
     /**
      * 已连接到请求的服务器
      */
@@ -37,19 +41,23 @@ public final class ProxyTask implements Runnable {
      */
     private static final String SERVERERROR = "HTTP/1.1 500 Connection FAILED\r\n\r\n";
 
+    private StringBuilder builder = new StringBuilder();
+
     @Override
     public void run() {
-        StringBuilder builder = new StringBuilder();
         try {
-            builder.append("\r\n").append("Request Time ：" + sdf.format(new Date()));
+            builder.append("\r\n").append("-----------------start------------");
+            builder.append("\r\n").append("Request Time: ").append(sdf.format(new Date()));
             InputStream isIn = socketIn.getInputStream();
-            OutputStream osIn = socketIn.getOutputStream();            //从客户端流数据中读取头部，获得请求主机和端口
-            HttpHeader header = HttpHeader.readHeader(isIn);                        //添加请求日志信息
-            builder.append("\r\n").append("From Host ：" + socketIn.getInetAddress());
-            builder.append("\r\n").append("From Port ：" + socketIn.getPort());
-            builder.append("\r\n").append("Proxy Method：" + header.getMethod());
-            builder.append("\r\n").append("Request Host ：" + header.getHost());
-            builder.append("\r\n").append("Request Port ：" + header.getPort());
+            OutputStream osIn = socketIn.getOutputStream();  //从客户端流数据中读取头部，获得请求主机和端口
+            HttpHeader header = HttpHeader.readHeader(isIn); //添加请求日志信息
+            builder.append("\r\n").append("From Host: ").append(socketIn.getInetAddress());
+            builder.append("\r\n").append("From Port: ").append(socketIn.getPort());
+            builder.append("\r\n").append("Proxy Method: ").append(header.getMethod());
+            builder.append("\r\n").append("Request Host: ").append(header.getHost());
+            builder.append("\r\n").append("Request Port: ").append(header.getPort());
+            builder.append("\r\n").append("----------------------------------");
+            listener.onEvent(new ProxyEvent(ProxyEvent.EventType.LOG_EVENT, builder.toString()));
             //如果没解析出请求请求地址和端口，则返回错误信息
             if (header.getHost() == null || header.getPort() == null) {
                 osIn.write(SERVERERROR.getBytes());
@@ -79,16 +87,18 @@ public final class ProxyTask implements Runnable {
             readForwardDate(isIn, osOut);
             //等待向客户端转发的线程结束
             ot.join();
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
             if (!socketIn.isOutputShutdown()) {
                 //如果还可以返回错误状态的话，返回内部错误
                 try {
                     socketIn.getOutputStream().write(SERVERERROR.getBytes());
                 } catch (IOException e1) {
-                    e.printStackTrace();
+                    e1.printStackTrace();
                 }
             }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         } finally {
             try {
                 if (socketIn != null) {
@@ -103,21 +113,14 @@ public final class ProxyTask implements Runnable {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }            //纪录上下行数据量和最后结束时间并打印
-            builder.append("\r\n").append("Up Bytes ：" + totalUpload);
-            builder.append("\r\n").append("Down Bytes ：" + totalDownload);
-            builder.append("\r\n").append("Closed Time ：" + sdf.format(new Date()));
-            builder.append("\r\n");
-            logRequestMsg(builder.toString());
+            }
+            //纪录上下行数据量和最后结束时间并打印
+            builder.append("\r\n").append("Up Bytes: ").append(totalUpload);
+            builder.append("\r\n").append("Down Bytes: ").append(totalDownload);
+            builder.append("\r\n").append("Closed Time: ").append(sdf.format(new Date()));
+            builder.append("\r\n").append("------------end---------------\r\n");
+            listener.onEvent(new ProxyEvent(ProxyEvent.EventType.LOG_EVENT, builder.toString()));
         }
-    }
-
-    /**
-     * 避免多线程竞争把日志打串行了
-     * * @param msg
-     */
-    private synchronized void logRequestMsg(String msg) {
-        Logger.d(msg);
     }
 
     /**
@@ -127,7 +130,7 @@ public final class ProxyTask implements Runnable {
      * * @param osOut
      */
     private void readForwardDate(InputStream isIn, OutputStream osOut) {
-        byte[] buffer = new byte[4096];
+        byte[] buffer = new byte[1024];
         try {
             int len;
             while ((len = isIn.read(buffer)) != -1) {
@@ -136,21 +139,28 @@ public final class ProxyTask implements Runnable {
                     osOut.flush();
                 }
                 totalUpload += len;
+                data.setUpStream(totalUpload);
+                listener.onEvent(new ProxyEvent(ProxyEvent.EventType.DATA_EVENT, data));
                 if (socketIn.isClosed() || socketOut.isClosed()) {
                     break;
                 }
             }
         } catch (Exception e) {
+            e.printStackTrace();
             try {
                 socketOut.close();// 尝试关闭远程服务器连接，中断转发线程的读阻塞状态
             } catch (IOException e1) {
-                e.printStackTrace();
+                e1.printStackTrace();
             }
         }
     }
 
+    private DataEventObject data = new DataEventObject(totalUpload, totalDownload);
+
     /**
-     * 将服务器端返回的数据转发给客户端 	 * 	 * @param isOut 	 * @param osIn
+     * 将服务器端返回的数据转发给客户端
+     * * @param isOut
+     * * @param osIn
      */
     class DataSendThread extends Thread {
         private InputStream isOut;
@@ -163,15 +173,16 @@ public final class ProxyTask implements Runnable {
 
         @Override
         public void run() {
-            byte[] buffer = new byte[4096];
+            byte[] buffer = new byte[1024];
             try {
                 int len;
                 while ((len = isOut.read(buffer)) != -1) {
                     if (len > 0) {
-                        // logData(buffer, 0, len);
                         osIn.write(buffer, 0, len);
                         osIn.flush();
                         totalDownload += len;
+                        data.setDownStream(totalDownload);
+                        listener.onEvent(new ProxyEvent(ProxyEvent.EventType.DATA_EVENT, data));
                     }
                     if (socketIn.isOutputShutdown() || socketOut.isClosed()) {
                         break;
