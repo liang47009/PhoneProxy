@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements ProxyEventListene
         listView.setItemsCanFocus(false);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         listView.setVisibility(View.VISIBLE);
-        addListData();
+        addListData(simplead);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             for (String permission : permissions) {
                 int granted = checkSelfPermission(permission);
@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements ProxyEventListene
         }
     }
 
-    private void addListData() {
+    private void addListData(final SimpleAdapter simpleAdapter) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -174,6 +174,12 @@ public class MainActivity extends AppCompatActivity implements ProxyEventListene
                             listems.add(listem);
                         }
                     }
+                    MainActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            simpleAdapter.notifyDataSetChanged();
+                        }
+                    });
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
