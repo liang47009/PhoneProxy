@@ -1,8 +1,8 @@
 package com.yunfeng.tools.phoneproxy.http;
 
-import com.yunfeng.tools.phoneproxy.view.DataEventObject;
-import com.yunfeng.tools.phoneproxy.view.ProxyEvent;
-import com.yunfeng.tools.phoneproxy.view.ProxyEventListener;
+import com.yunfeng.tools.phoneproxy.listener.DataEventObject;
+import com.yunfeng.tools.phoneproxy.listener.ProxyEvent;
+import com.yunfeng.tools.phoneproxy.listener.ProxyEventListener;
 
 import java.io.IOException;
 import java.io.InputStream;

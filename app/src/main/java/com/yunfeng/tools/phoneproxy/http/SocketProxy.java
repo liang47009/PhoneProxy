@@ -1,8 +1,9 @@
 package com.yunfeng.tools.phoneproxy.http;
 
-import com.yunfeng.tools.phoneproxy.MainActivity;
+import com.yunfeng.tools.phoneproxy.listener.ErrorEventObject;
+import com.yunfeng.tools.phoneproxy.listener.ProxyEvent;
 import com.yunfeng.tools.phoneproxy.util.Logger;
-import com.yunfeng.tools.phoneproxy.view.ProxyEventListener;
+import com.yunfeng.tools.phoneproxy.listener.ProxyEventListener;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -17,30 +18,26 @@ import java.util.concurrent.Executors;
  * http 代理程序 *
  */
 public class SocketProxy {
-    private static final int listenPort = 8888;
     private static final ExecutorService executorService = Executors.newCachedThreadPool();
 
-    public static void startup(final ProxyEventListener listener) {
+    public static void startup(final String port, final ProxyEventListener listener) {
         executorService.execute(new Runnable() {
             @Override
             public void run() {
                 try {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.CHINA);
-                    ServerSocket serverSocket = new ServerSocket(listenPort);
+                    ServerSocket serverSocket = new ServerSocket(Integer.valueOf(port));
                     Logger.d("Proxy Server Start At" + sdf.format(new Date()));
-                    Logger.d("listening port:" + listenPort + "……");
+                    Logger.d("listening port:" + port + "……");
                     while (true) {
-                        try {
-                            Socket socket = serverSocket.accept();
-                            socket.setKeepAlive(true);
-                            //加入任务列表，等待处理
-                            executorService.execute(new ProxyTask(socket, listener));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        Socket socket = serverSocket.accept();
+                        socket.setKeepAlive(true);
+                        //加入任务列表，等待处理
+                        executorService.execute(new ProxyTask(socket, listener));
                     }
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
+                    listener.onEvent(new ProxyEvent(ProxyEvent.EventType.ERROR_EVENT, new ErrorEventObject("server error", e)));
                 }
             }
         });

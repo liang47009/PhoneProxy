@@ -1,4 +1,4 @@
-package com.yunfeng.tools.phoneproxy.view;
+package com.yunfeng.tools.phoneproxy.listener;
 
 /**
  * e
@@ -11,7 +11,7 @@ public class ProxyEvent {
     private EventType eventType;
 
     public enum EventType {
-        LOG_EVENT, DATA_EVENT,
+        LOG_EVENT, DATA_EVENT, ERROR_EVENT,
     }
 
     public ProxyEvent(EventType logEvent, Object msg) {

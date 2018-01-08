@@ -15,6 +15,7 @@
         <meta-data
             android:name="asset_statements"
             android:resource="@string/asset_statements" />
+
         <activity
             android:name="com.yunfeng.tools.phoneproxy.MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|locale|layoutDirection"
@@ -36,6 +37,17 @@
                     android:host="phoneproxy.tools.yunfeng.com"
                     android:pathPattern="/pp"
                     android:scheme="http" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.yunfeng.tools.phoneproxy.view.SettingsActivity"
+            android:label="@string/action_settings">
+            <intent-filter android:order="1">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
     </application>
