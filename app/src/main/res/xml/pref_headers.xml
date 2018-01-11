@@ -4,7 +4,7 @@
 
     <header
         android:fragment="com.yunfeng.tools.phoneproxy.view.SettingsActivity$GeneralPreferenceFragment"
-        android:icon="@drawable/ic_info_black_24dp"
+        android:icon="@mipmap/ic_launcher"
         android:title="@string/pref_header_general" />
 
     <!--<header-->

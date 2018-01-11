@@ -55,8 +55,6 @@ public class Utils {
                             if (!checkDataExsit("name", addr)) {
                                 Map<String, Object> listem = new HashMap<String, Object>();
                                 listem.put("name", addr);
-                                listem.put("desc", hostName);
-                                listem.put("head", android.R.drawable.btn_default);
                                 listems.add(listem);
                             }
                         }
@@ -116,9 +114,7 @@ public class Utils {
 		 * 下面的程序中如果 new String[] { "name", "head", "desc","name" } new int[] {R.id.name,R.id.head,R.id.desc,R.id.head}
 		 * 这个head的组件会被name资源覆盖
 		 * */
-        final SimpleAdapter simplead = new SimpleAdapter(activity, listems,
-                R.layout.network_list, new String[]{"name", "head", "desc"},
-                new int[]{R.id.name, R.id.head, R.id.desc});
+        final SimpleAdapter simplead = new SimpleAdapter(activity, listems, R.layout.network_list, new String[]{"name"}, new int[]{R.id.name});
         listView.setAdapter(simplead);
         listView.setItemsCanFocus(false);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
