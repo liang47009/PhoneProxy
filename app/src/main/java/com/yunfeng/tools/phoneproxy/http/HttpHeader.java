@@ -16,6 +16,7 @@ public final class HttpHeader {
     public static final int MAXLINESIZE = 4096;
     public static final String METHOD_GET = "GET";
     public static final String METHOD_POST = "POST";
+    public static final String METHOD_HEAD = "HEAD";
     public static final String METHOD_CONNECT = "CONNECT";
 
     private HttpHeader() {
@@ -64,7 +65,7 @@ public final class HttpHeader {
             host = hosts[1].trim();
             if (method.endsWith(METHOD_CONNECT)) {
                 port = hosts.length == 3 ? hosts[2] : "443";//https默认端口为443
-            } else if (method.endsWith(METHOD_GET) || method.endsWith(METHOD_POST)) {
+            } else {
                 port = hosts.length == 3 ? hosts[2] : "80";//http默认端口为80
             }
         }
@@ -82,6 +83,8 @@ public final class HttpHeader {
             method = METHOD_GET;
         } else if (str.startsWith(METHOD_POST)) {//http POST请求
             method = METHOD_POST;
+        } else if (str.startsWith(METHOD_HEAD)) {
+            method = METHOD_HEAD;
         }
         return method;
     }
