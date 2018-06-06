@@ -11,7 +11,7 @@ public class ProxyEvent {
     private EventType eventType;
 
     public enum EventType {
-        LOG_EVENT, DATA_EVENT, ERROR_EVENT,
+        LOG_EVENT, DATA_EVENT, ERROR_EVENT, SERVER_START_EVENT, SERVER_STOP_EVENT
     }
 
     public ProxyEvent(EventType logEvent, Object msg) {

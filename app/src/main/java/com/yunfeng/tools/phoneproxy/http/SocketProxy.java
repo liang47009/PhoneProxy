@@ -19,6 +19,7 @@ import java.util.concurrent.Executors;
  */
 public class SocketProxy {
     private static final ExecutorService executorService = Executors.newCachedThreadPool();
+    public volatile static boolean isUp = false;
 
     public static void startup(final String port, final ProxyEventListener listener) {
         executorService.execute(new Runnable() {
@@ -29,6 +30,8 @@ public class SocketProxy {
                     ServerSocket serverSocket = new ServerSocket(Integer.valueOf(port));
                     Logger.d("Proxy Server Start At" + sdf.format(new Date()));
                     Logger.d("listening port:" + port + "……");
+                    listener.onEvent(new ProxyEvent(ProxyEvent.EventType.SERVER_START_EVENT, null));
+                    isUp = true;
                     while (true) {
                         Socket socket = serverSocket.accept();
                         socket.setKeepAlive(true);
@@ -38,6 +41,9 @@ public class SocketProxy {
                 } catch (Exception e) {
                     e.printStackTrace();
                     listener.onEvent(new ProxyEvent(ProxyEvent.EventType.ERROR_EVENT, new ErrorEventObject("server error", e)));
+                } finally {
+                    listener.onEvent(new ProxyEvent(ProxyEvent.EventType.SERVER_STOP_EVENT, null));
+                    isUp = false;
                 }
             }
         });

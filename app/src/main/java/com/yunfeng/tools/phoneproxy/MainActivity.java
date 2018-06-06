@@ -22,6 +22,8 @@ import com.yunfeng.tools.phoneproxy.view.SettingsActivity;
 
 public class MainActivity extends AppCompatActivity {
 
+    private MyProxyEventListener listener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,6 +35,11 @@ public class MainActivity extends AppCompatActivity {
         Intent appLinkIntent = this.getIntent();
         String appLinkAction = appLinkIntent.getAction();
         Uri appLinkData = appLinkIntent.getData();
+        listener = new MyProxyEventListener(this);
+        if (SocketProxy.isUp) {
+            View view = this.findViewById(R.id.start_proxy);
+            view.setEnabled(false);
+        }
     }
 
     @Override
@@ -80,11 +87,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startProxy(View view) {
-        view.setEnabled(false);
-
-        final String port = PreferenceManager.getDefaultSharedPreferences(this)
-                .getString("default_porxy_port", "8888");
-        SocketProxy.startup(port, new MyProxyEventListener(this));
+        final String port = PreferenceManager.getDefaultSharedPreferences(this).getString("default_porxy_port", "8888");
+        SocketProxy.startup(port, listener);
         ((Button) view).setText("Bind Port:" + port);
     }
 
