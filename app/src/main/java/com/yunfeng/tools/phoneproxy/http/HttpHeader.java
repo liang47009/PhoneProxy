@@ -60,7 +60,7 @@ public final class HttpHeader {
     private void addHeaderString(String str) {
         str = str.replaceAll("\r", "");
         header.add(str);
-        if (str.startsWith("Host")) {//解析主机和端口
+        if (str.startsWith("Host") || str.startsWith("host")) {//解析主机和端口
             String[] hosts = str.split(":");
             host = hosts[1].trim();
             if (method.endsWith(METHOD_CONNECT)) {
