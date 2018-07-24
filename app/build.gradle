@@ -63,6 +63,8 @@ dependencies {
 //    implementation 'org.bouncycastle:bcpkix-jdk15on:1.58'
 //    implementation 'org.jctools:jctools-core:2.1.1'
     implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:support-media-compat:27.1.1'
+    implementation 'com.android.support:support-v4:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     implementation 'com.google.android.gms:play-services-ads:11.6.2'
     implementation 'com.google.firebase:firebase-core:11.6.2'
