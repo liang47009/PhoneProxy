@@ -1,5 +1,7 @@
 package com.yunfeng.tools.phoneproxy.http;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -13,10 +15,10 @@ public final class HttpHeader {
     private String method;
     private String host;
     private String port;
-    public static final int MAXLINESIZE = 4096;
-    public static final String METHOD_GET = "GET";
-    public static final String METHOD_POST = "POST";
-    public static final String METHOD_HEAD = "HEAD";
+    private static final int MAXLINESIZE = 4096;
+    private static final String METHOD_GET = "GET";
+    private static final String METHOD_POST = "POST";
+    private static final String METHOD_HEAD = "HEAD";
     public static final String METHOD_CONNECT = "CONNECT";
 
     private HttpHeader() {
@@ -25,7 +27,7 @@ public final class HttpHeader {
     /**
      * 从数据流中读取请求头部信息，必须在放在流开启之后，任何数据读取之前 	 * @param in 	 * @return 	 * @throws IOException
      */
-    public static final HttpHeader readHeader(InputStream in) throws IOException {
+    public static HttpHeader readHeader(InputStream in) throws IOException {
         HttpHeader header = new HttpHeader();
         StringBuilder sb = new StringBuilder();        //先读出交互协议来
         char c = 0;
@@ -68,14 +70,16 @@ public final class HttpHeader {
             } else {
                 port = hosts.length == 3 ? hosts[2] : "80";//http默认端口为80
             }
+        } else {
+            Log.e("PP", "not start with host: " + str);
         }
     }
 
     /**
      * 判定请求方式 	 * @param str 	 * @return
      */
-    private String addHeaderMethod(String str) {
-        str = str.replaceAll("\r", "");
+    private String addHeaderMethod(String temp) {
+        String str = temp.toUpperCase().trim().replaceAll("\r", "");
         header.add(str);
         if (str.startsWith(METHOD_CONNECT)) {//https链接请求代理
             method = METHOD_CONNECT;
@@ -85,6 +89,8 @@ public final class HttpHeader {
             method = METHOD_POST;
         } else if (str.startsWith(METHOD_HEAD)) {
             method = METHOD_HEAD;
+        } else {
+            Log.e("PP", "addHeaderMethod: " + temp);
         }
         return method;
     }
