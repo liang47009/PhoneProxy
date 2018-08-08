@@ -1,11 +1,13 @@
 package com.yunfeng.tools.phoneproxy.util;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.widget.SimpleAdapter;
 
 import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.yunfeng.tools.phoneproxy.MainActivity;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -23,11 +25,12 @@ public class Utils {
 
     public static final List<Map<String, Object>> listems = new ArrayList<Map<String, Object>>();
 
-    public static void addListData(final Activity activity, final SimpleAdapter simpleAdapter) {
-        new Thread(new Runnable() {
+    public static void internetChange(Context context) {
+        ThreadPool.getInstance().submit(new ThreadPool.Job<Object>() {
             @Override
-            public void run() {
-                try {
+            public Object run(ThreadPool.JobContext jc) throws Exception {
+                synchronized (listems) {
+                    listems.clear();
                     Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
                     while (nis.hasMoreElements()) {
                         NetworkInterface ni = nis.nextElement();
@@ -44,17 +47,11 @@ public class Utils {
                             }
                         }
                     }
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            simpleAdapter.notifyDataSetChanged();
-                        }
-                    });
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
+                MainActivity.getHandler().sendEmptyMessage(MainActivity.MSG_INTERNETCHANGED);
+                return null;
             }
-        }).start();
+        });
     }
 
     private static boolean checkDataExsit(Object key, Object value) {

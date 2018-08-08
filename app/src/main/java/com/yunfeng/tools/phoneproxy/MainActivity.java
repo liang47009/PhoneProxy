@@ -3,9 +3,14 @@ package com.yunfeng.tools.phoneproxy;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -19,21 +24,59 @@ import android.widget.SimpleAdapter;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.yunfeng.tools.phoneproxy.adapter.NetworkSimpleAdapter;
 import com.yunfeng.tools.phoneproxy.http.SocketProxy;
 import com.yunfeng.tools.phoneproxy.listener.AdMobListener;
 import com.yunfeng.tools.phoneproxy.listener.MyProxyEventListener;
+import com.yunfeng.tools.phoneproxy.receiver.InternetChangeBroadcastReceiver;
 import com.yunfeng.tools.phoneproxy.util.PermissionHelper;
 import com.yunfeng.tools.phoneproxy.util.Utils;
 import com.yunfeng.tools.phoneproxy.view.SettingsActivity;
+
+import java.lang.ref.WeakReference;
 
 public class MainActivity extends AppCompatActivity {
 
     private MyProxyEventListener listener;
 
+    private InternetChangeBroadcastReceiver receiver;
+
+    private NetworkSimpleAdapter simpleAdapter = null;
+
+    private static final MainHandler handler = new MainHandler();
+
+    public static final int MSG_INTERNETCHANGED = 1;
+
+    private static class MainHandler extends Handler {
+        private WeakReference<MainActivity> weakReference;
+
+        private void setWeakReference(MainActivity mainActivity) {
+            weakReference = new WeakReference<>(mainActivity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            MainActivity activity = weakReference.get();
+            if (null != activity) {
+                switch (msg.what) {
+                    case MSG_INTERNETCHANGED:
+                        activity.simpleAdapter.notifyDataSetChanged();
+                        break;
+                }
+            }
+        }
+    }
+
+    public static Handler getHandler() {
+        return handler;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        handler.setWeakReference(this);
         Utils.initFireBase(this);
         PermissionHelper.request(this);
         initView(this);
@@ -55,19 +98,29 @@ public class MainActivity extends AppCompatActivity {
         adView.setAdListener(new AdMobListener());
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
-
+        simpleAdapter = new NetworkSimpleAdapter(activity, Utils.listems, R.layout.network_list, new String[]{"name"}, new int[]{R.id.name});
         ListView listView = (ListView) activity.findViewById(R.id.list_ips);
-        final SimpleAdapter simpleAdapter = new SimpleAdapter(activity, Utils.listems, R.layout.network_list, new String[]{"name"}, new int[]{R.id.name});
         listView.setAdapter(simpleAdapter);
         listView.setItemsCanFocus(false);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         listView.setVisibility(View.VISIBLE);
-        Utils.addListData(activity, simpleAdapter);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        if (null == receiver) {
+            receiver = new InternetChangeBroadcastReceiver();
+        }
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(receiver, filter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(receiver);
     }
 
     @Override
