@@ -26,13 +26,11 @@ import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
-import com.yunfeng.tools.phoneproxy.MainActivity;
-
 /**
  * Helper to ask  permission.
  */
 public class PermissionHelper {
-    private static final String[] PERMISSIONS = {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.INTERNET};
+    private static final String[] PERMISSIONS = {Manifest.permission.INTERNET};
     private static final int REQ_PERMISSION_CODE = 0x1001;
 
     /**
