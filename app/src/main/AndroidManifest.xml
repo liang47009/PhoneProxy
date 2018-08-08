@@ -49,6 +49,11 @@
         </activity>
 
         <receiver android:name="com.yunfeng.tools.phoneproxy.receiver.InternetChangeBroadcastReceiver" />
+        <service
+            android:name="com.yunfeng.tools.phoneproxy.service.DataStreamService"
+            android:enabled="true"
+            android:exported="false"
+            android:process=":dss" />
     </application>
 
 </manifest>

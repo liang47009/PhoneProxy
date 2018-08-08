@@ -29,6 +29,7 @@ import com.yunfeng.tools.phoneproxy.http.SocketProxy;
 import com.yunfeng.tools.phoneproxy.listener.AdMobListener;
 import com.yunfeng.tools.phoneproxy.listener.MyProxyEventListener;
 import com.yunfeng.tools.phoneproxy.receiver.InternetChangeBroadcastReceiver;
+import com.yunfeng.tools.phoneproxy.service.DataStreamService;
 import com.yunfeng.tools.phoneproxy.util.PermissionHelper;
 import com.yunfeng.tools.phoneproxy.util.Utils;
 import com.yunfeng.tools.phoneproxy.view.SettingsActivity;
@@ -37,15 +38,14 @@ import java.lang.ref.WeakReference;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final int MSG_INTERNETCHANGED = 1;
+
     private MyProxyEventListener listener;
-
     private InternetChangeBroadcastReceiver receiver;
-
     private NetworkSimpleAdapter simpleAdapter = null;
+    private SocketProxy socketProxy = new SocketProxy();
 
     private static final MainHandler handler = new MainHandler();
-
-    public static final int MSG_INTERNETCHANGED = 1;
 
     private static class MainHandler extends Handler {
         private WeakReference<MainActivity> weakReference;
@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
         String appLinkAction = appLinkIntent.getAction();
         Uri appLinkData = appLinkIntent.getData();
         listener = new MyProxyEventListener(this);
-        if (SocketProxy.isUp) {
+        if (socketProxy.isStartUp()) {
             View view = this.findViewById(R.id.start_proxy);
             view.setEnabled(false);
         }
@@ -166,8 +166,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void startProxy(View view) {
         final String port = PreferenceManager.getDefaultSharedPreferences(this).getString("default_porxy_port", "8888");
-        SocketProxy.startup(port, listener);
+        socketProxy.startup(port, listener);
         ((Button) view).setText("Bind Port:" + port);
+//        Intent it = new Intent(this, DataStreamService.class);
+//        startService(it);
+//        view.setEnabled(false);
     }
 
     public void clearLog(View view) {

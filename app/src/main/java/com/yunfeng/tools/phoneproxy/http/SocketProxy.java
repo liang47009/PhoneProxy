@@ -18,20 +18,19 @@ import java.util.concurrent.Executors;
  * http 代理程序 *
  */
 public class SocketProxy {
-    private static final ExecutorService executorService = Executors.newCachedThreadPool();
-    public volatile static boolean isUp = false;
+    private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private ServerSocket serverSocket = null;
 
-    public static void startup(final String port, final ProxyEventListener listener) {
+    public void startup(final String port, final ProxyEventListener listener) {
         executorService.execute(new Runnable() {
             @Override
             public void run() {
                 try {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.CHINA);
-                    ServerSocket serverSocket = new ServerSocket(Integer.valueOf(port));
+                    serverSocket = new ServerSocket(Integer.valueOf(port));
                     Logger.d("Proxy Server Start At" + sdf.format(new Date()));
                     Logger.d("listening port:" + port + "……");
                     listener.onEvent(new ProxyEvent(ProxyEvent.EventType.SERVER_START_EVENT, null));
-                    isUp = true;
                     while (true) {
                         Socket socket = serverSocket.accept();
                         socket.setKeepAlive(true);
@@ -43,9 +42,16 @@ public class SocketProxy {
                     listener.onEvent(new ProxyEvent(ProxyEvent.EventType.ERROR_EVENT, new ErrorEventObject("server error", e)));
                 } finally {
                     listener.onEvent(new ProxyEvent(ProxyEvent.EventType.SERVER_STOP_EVENT, null));
-                    isUp = false;
                 }
             }
         });
+    }
+
+    public boolean isStartUp() {
+        boolean starting = false;
+        if (serverSocket != null && serverSocket.isBound()) {
+            starting = true;
+        }
+        return starting;
     }
 }
