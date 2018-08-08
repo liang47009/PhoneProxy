@@ -1,8 +1,8 @@
 package com.yunfeng.tools.phoneproxy;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,9 +14,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.yunfeng.tools.phoneproxy.http.SocketProxy;
+import com.yunfeng.tools.phoneproxy.listener.AdMobListener;
 import com.yunfeng.tools.phoneproxy.listener.MyProxyEventListener;
+import com.yunfeng.tools.phoneproxy.util.PermissionHelper;
 import com.yunfeng.tools.phoneproxy.util.Utils;
 import com.yunfeng.tools.phoneproxy.view.SettingsActivity;
 
@@ -28,8 +34,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Utils.init(this);
-
+        Utils.initFireBase(this);
+        PermissionHelper.request(this);
+        initView(this);
         //https://phoneproxy.tools.yunfeng.com/.well-known/assetlinks.json
         // ATTENTION: This was auto-generated to handle app links.
         Intent appLinkIntent = this.getIntent();
@@ -42,6 +49,27 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void initView(Activity activity) {
+        // Load an ad into the AdMob banner view.
+        AdView adView = (AdView) activity.findViewById(R.id.adView);
+        adView.setAdListener(new AdMobListener());
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
+
+        ListView listView = (ListView) activity.findViewById(R.id.list_ips);
+        final SimpleAdapter simpleAdapter = new SimpleAdapter(activity, Utils.listems, R.layout.network_list, new String[]{"name"}, new int[]{R.id.name});
+        listView.setAdapter(simpleAdapter);
+        listView.setItemsCanFocus(false);
+        listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        listView.setVisibility(View.VISIBLE);
+        Utils.addListData(activity, simpleAdapter);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -51,17 +79,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
     @TargetApi(Build.VERSION_CODES.M)
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case Utils.REQUEST_PERMISIONS:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                } else {
-                    requestPermissions(permissions, Utils.REQUEST_PERMISIONS);
-                }
-                break;
-        }
+        PermissionHelper.onRequestPermissionsResult(this, requestCode, permissions, grantResults);
     }
 
     @Override
