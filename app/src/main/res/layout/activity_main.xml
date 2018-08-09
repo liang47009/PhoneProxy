@@ -1,45 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:ads="http://schemas.android.com/apk/res-auto"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    tools:context="com.yunfeng.tools.phoneproxy.MainActivity">
+    android:orientation="vertical">
 
     <ListView
         android:id="@+id/list_ips"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/start_proxy"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/start_proxy"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:focusable="true"
-        android:onClick="startProxy"
-        android:text="@string/start_proxy"
-        app:layout_constraintBottom_toTopOf="@id/logView"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/list_ips" />
+        android:layout_height="wrap_content" />
 
     <LinearLayout
         android:id="@+id/logView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:orientation="vertical"
+        android:orientation="vertical">
 
-        app:layout_constraintBottom_toTopOf="@id/adView"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/start_proxy">
+        <Button
+            android:id="@+id/start_proxy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:focusable="true"
+            android:gravity="center"
+            android:onClick="startProxy"
+            android:text="@string/start_proxy" />
 
         <Button
             android:layout_width="wrap_content"
@@ -78,9 +64,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         ads:adSize="BANNER"
-        ads:adUnitId="@string/banner_ad_unit_id"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        ads:adUnitId="@string/banner_ad_unit_id" />
 
-</android.support.constraint.ConstraintLayout>
+</LinearLayout>
