@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import com.yunfeng.tools.phoneproxy.R;
 
+import java.lang.ref.WeakReference;
 import java.util.Locale;
 
 /**
@@ -17,51 +18,54 @@ import java.util.Locale;
  */
 public class MyProxyEventListener implements ProxyEventListener {
 
-    private Activity mActivity;
+    private WeakReference<Activity> mActivity;
     private long totalUpStream;
     private long totalDownStream;
 
     public MyProxyEventListener(Activity activity) {
-        this.mActivity = activity;
+        this.mActivity = new WeakReference<Activity>(activity);
     }
 
     @Override
     public void onEvent(final ProxyEvent event) {
-        mActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                switch (event.getEventType()) {
-                    case LOG_EVENT: {
-                        EditText view = mActivity.findViewById(R.id.log_editText);
-                        view.append(event.getData().toString());
-                        break;
-                    }
-                    case DATA_EVENT: {
-                        DataEventObject data = (DataEventObject) event.getData();
-                        totalUpStream += data.getUpStream();
-                        totalDownStream += data.getDownStream();
-                        TextView view = mActivity.findViewById(R.id.data_textView);
-                        view.setText(String.format(Locale.CHINA, "TotalUpStream: %d \r\nTotalDownStream: %d", totalUpStream, totalDownStream));
-                        break;
-                    }
-                    case ERROR_EVENT: {
-                        ErrorEventObject data = (ErrorEventObject) event.getData();
-                        Toast.makeText(mActivity, data.getErrorMsg() + ", " + data.getThrowable().getMessage(), Toast.LENGTH_LONG).show();
-                        break;
-                    }
-                    case SERVER_START_EVENT: {
-                        View view = mActivity.findViewById(R.id.start_proxy);
-                        view.setEnabled(false);
-                        break;
-                    }
-                    case SERVER_STOP_EVENT: {
-                        Button view = mActivity.findViewById(R.id.start_proxy);
-                        view.setText(R.string.start_proxy);
-                        view.setEnabled(true);
-                        break;
+        final Activity activity = mActivity.get();
+        if (activity != null) {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    switch (event.getEventType()) {
+                        case LOG_EVENT: {
+                            EditText view = activity.findViewById(R.id.log_editText);
+                            view.append(event.getData().toString());
+                            break;
+                        }
+                        case DATA_EVENT: {
+                            DataEventObject data = (DataEventObject) event.getData();
+                            totalUpStream += data.getUpStream();
+                            totalDownStream += data.getDownStream();
+                            TextView view = activity.findViewById(R.id.data_textView);
+                            view.setText(String.format(Locale.CHINA, "TotalUpStream: %d \r\nTotalDownStream: %d", totalUpStream, totalDownStream));
+                            break;
+                        }
+                        case ERROR_EVENT: {
+                            ErrorEventObject data = (ErrorEventObject) event.getData();
+                            Toast.makeText(activity, data.getErrorMsg() + ", " + data.getThrowable().getMessage(), Toast.LENGTH_LONG).show();
+                            break;
+                        }
+                        case SERVER_START_EVENT: {
+                            View view = activity.findViewById(R.id.start_proxy);
+                            view.setEnabled(false);
+                            break;
+                        }
+                        case SERVER_STOP_EVENT: {
+                            Button view = activity.findViewById(R.id.start_proxy);
+                            view.setText(R.string.start_proxy);
+                            view.setEnabled(true);
+                            break;
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 }

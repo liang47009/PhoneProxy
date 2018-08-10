@@ -11,10 +11,13 @@ import com.yunfeng.tools.phoneproxy.MainActivity;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -24,6 +27,8 @@ import java.util.Map;
 public class Utils {
 
     public static final List<Map<String, Object>> listems = new ArrayList<Map<String, Object>>();
+
+    private final static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.CHINA);
 
     public static void internetChange(Context context) {
         ThreadPool.getInstance().submit(new ThreadPool.Job<Object>() {
@@ -78,5 +83,9 @@ public class Utils {
         bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "image");
         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
         MobileAds.initialize(activity, "ca-app-pub-9683268735381992~5860363867");
+    }
+
+    public static String formatDate(Date date) {
+        return sdf.format(date);
     }
 }

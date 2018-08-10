@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private MyProxyEventListener listener;
     private InternetChangeBroadcastReceiver receiver;
     private NetworkSimpleAdapter simpleAdapter = null;
-    private SocketProxy socketProxy = new SocketProxy();
+    private static final SocketProxy socketProxy = new SocketProxy();
 
     private static final MainHandler handler = new MainHandler();
 
@@ -162,6 +162,10 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void stopProxy(View view) {
+        socketProxy.onDestory(this);
     }
 
     public void startProxy(View view) {
