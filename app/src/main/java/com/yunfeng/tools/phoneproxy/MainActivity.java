@@ -2,10 +2,12 @@ package com.yunfeng.tools.phoneproxy;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,10 +19,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
@@ -29,7 +33,6 @@ import com.yunfeng.tools.phoneproxy.http.SocketProxy;
 import com.yunfeng.tools.phoneproxy.listener.AdMobListener;
 import com.yunfeng.tools.phoneproxy.listener.MyProxyEventListener;
 import com.yunfeng.tools.phoneproxy.receiver.InternetChangeBroadcastReceiver;
-import com.yunfeng.tools.phoneproxy.service.DataStreamService;
 import com.yunfeng.tools.phoneproxy.util.PermissionHelper;
 import com.yunfeng.tools.phoneproxy.util.Utils;
 import com.yunfeng.tools.phoneproxy.view.SettingsActivity;
@@ -98,11 +101,23 @@ public class MainActivity extends AppCompatActivity {
         adView.setAdListener(new AdMobListener());
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
-        simpleAdapter = new NetworkSimpleAdapter(activity, Utils.listems, R.layout.network_list, new String[]{"name"}, new int[]{R.id.name});
+        simpleAdapter = new NetworkSimpleAdapter(activity, Utils.listems, R.layout.network_list, new String[]{"name"}, new int[]{R.id.tv_ips});
         ListView listView = (ListView) activity.findViewById(R.id.list_ips);
         listView.setAdapter(simpleAdapter);
         listView.setItemsCanFocus(false);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                ClipboardManager clipboardManager = (ClipboardManager) view.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                if (null != clipboardManager) {
+                    String ip = ((TextView) view).getText().toString();
+                    clipboardManager.setPrimaryClip(ClipData.newPlainText("text", ip));
+                    Toast.makeText(view.getContext(), R.string.copy_to_clipboard, Toast.LENGTH_LONG).show();
+                }
+                return true;
+            }
+        });
         listView.setVisibility(View.VISIBLE);
     }
 
