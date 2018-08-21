@@ -2,11 +2,15 @@ package com.yunfeng.tools.phoneproxy;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
@@ -16,6 +20,7 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,6 +43,7 @@ import com.yunfeng.tools.phoneproxy.util.Utils;
 import com.yunfeng.tools.phoneproxy.view.SettingsActivity;
 
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -183,9 +189,12 @@ public class MainActivity extends AppCompatActivity {
         socketProxy.onDestory(this);
     }
 
+//    NettyServer nettyServer = new NettyServer();
+
     public void startProxy(View view) {
         final String port = PreferenceManager.getDefaultSharedPreferences(this).getString("default_porxy_port", "8888");
         socketProxy.startup(port, listener);
+//        nettyServer.startUp("0.0.0.0", Integer.valueOf(port));
         ((Button) view).setText("Bind Port:" + port);
 //        Intent it = new Intent(this, DataStreamService.class);
 //        startService(it);
@@ -196,4 +205,32 @@ public class MainActivity extends AppCompatActivity {
         EditText logEditTextView = (EditText) MainActivity.this.findViewById(R.id.log_editText);
         logEditTextView.setText("");
     }
+
+    public void changeIcon() {
+        PackageManager pm = this.getPackageManager();
+        if (pm.getComponentEnabledSetting(new ComponentName(this, "com.yunfeng.tools.phoneproxy.MainActivity")) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+            pm.setComponentEnabledSetting(new ComponentName(this, "com.yunfeng.tools.phoneproxy.MainActivity"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+            pm.setComponentEnabledSetting(new ComponentName(this, "com.yunfeng.tools.phoneproxy.RoundActivity"), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+        } else {
+            pm.setComponentEnabledSetting(new ComponentName(this, "com.yunfeng.tools.phoneproxy.MainActivity"), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+            pm.setComponentEnabledSetting(new ComponentName(this, "com.yunfeng.tools.phoneproxy.RoundActivity"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+        }
+        Log.e("TAG", "setIcon----success!!");
+    }
+
+    public void restartSystemLauncher(PackageManager pm) {
+        ActivityManager am = (ActivityManager) getSystemService(Activity.ACTIVITY_SERVICE);
+        Intent i = new Intent(Intent.ACTION_MAIN);
+        i.addCategory(Intent.CATEGORY_HOME);
+        i.addCategory(Intent.CATEGORY_DEFAULT);
+        List<ResolveInfo> resolves = pm.queryIntentActivities(i, 0);
+        for (ResolveInfo res : resolves) {
+            if (res.activityInfo != null) {
+                if (am != null) {
+                    am.killBackgroundProcesses(res.activityInfo.packageName);
+                }
+            }
+        }
+    }
+
 }

@@ -70,9 +70,8 @@ public final class HttpHeader {
             } else {
                 port = hosts.length == 3 ? hosts[2] : "80";//http默认端口为80
             }
-        } else {
-            Log.e("PP", "not start with host: " + str);
         }
+        Log.e("PP", "addHeaderString: " + str);
     }
 
     /**
@@ -89,9 +88,8 @@ public final class HttpHeader {
             method = METHOD_POST;
         } else if (str.startsWith(METHOD_HEAD)) {
             method = METHOD_HEAD;
-        } else {
-            Log.e("PP", "addHeaderMethod: " + temp);
         }
+        Log.e("PP", "addHeaderMethod: " + temp);
         return method;
     }
 

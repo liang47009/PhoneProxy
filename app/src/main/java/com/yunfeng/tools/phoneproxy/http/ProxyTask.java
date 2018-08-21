@@ -1,5 +1,7 @@
 package com.yunfeng.tools.phoneproxy.http;
 
+import android.util.Log;
+
 import com.yunfeng.tools.phoneproxy.listener.DataEventObject;
 import com.yunfeng.tools.phoneproxy.listener.ProxyEvent;
 import com.yunfeng.tools.phoneproxy.listener.ProxyEventListener;
@@ -50,6 +52,7 @@ public final class ProxyTask implements Runnable {
             builder.append("\r\n").append("Request Time: ").append(sdf.format(new Date()));
             InputStream isIn = socketIn.getInputStream();
             OutputStream osIn = socketIn.getOutputStream();  //从客户端流数据中读取头部，获得请求主机和端口
+            Log.e("PP", "-----------------------------------------------------------");
             HttpHeader header = HttpHeader.readHeader(isIn); //添加请求日志信息
             builder.append("\r\n").append("From Host: ").append(socketIn.getInetAddress());
             builder.append("\r\n").append("From Port: ").append(socketIn.getPort());
@@ -59,6 +62,7 @@ public final class ProxyTask implements Runnable {
             builder.append("\r\n").append("----------------------------------");
             listener.onEvent(new ProxyEvent(ProxyEvent.EventType.LOG_EVENT, builder.toString()));
             //如果没解析出请求请求地址和端口，则返回错误信息
+            Log.e("PP", "-----------------------------------------------------------");
             if (header.getHost() == null || header.getPort() == null) {
                 osIn.write(SERVERERROR.getBytes());
                 osIn.flush();
@@ -67,6 +71,7 @@ public final class ProxyTask implements Runnable {
             // 查找主机和端口
             socketOut = new Socket(header.getHost(), Integer.parseInt(header.getPort()));
             socketOut.setKeepAlive(true);
+            socketOut.setSoTimeout(6 * 1000);
             InputStream isOut = socketOut.getInputStream();
             OutputStream osOut = socketOut.getOutputStream();
             //新开一个线程将返回的数据转发给客户端,串行会出问题，尚没搞明白原因
