@@ -19,6 +19,8 @@ package com.yunfeng.tools.phoneproxy.util;
 import android.util.Log;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -105,8 +107,14 @@ public class ThreadPool {
         return w;
     }
 
+    private final ExecutorService service = Executors.newCachedThreadPool();
+
     public <T> Future<T> submit(Job<T> job) {
         return submit(job, null);
+    }
+
+    public java.util.concurrent.Future submit(Runnable r) {
+        return service.submit(r);
     }
 
     private class Worker<T> implements Runnable, Future<T>, JobContext {

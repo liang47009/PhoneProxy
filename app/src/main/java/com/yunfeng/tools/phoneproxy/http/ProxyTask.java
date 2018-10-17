@@ -6,6 +6,7 @@ import com.yunfeng.tools.phoneproxy.listener.DataEventObject;
 import com.yunfeng.tools.phoneproxy.listener.ProxyEvent;
 import com.yunfeng.tools.phoneproxy.listener.ProxyEventListener;
 import com.yunfeng.tools.phoneproxy.util.Const;
+import com.yunfeng.tools.phoneproxy.util.ThreadPool;
 import com.yunfeng.tools.phoneproxy.util.Utils;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Date;
+import java.util.concurrent.Future;
 
 import static com.yunfeng.tools.phoneproxy.http.ProxyTask.StreamType.DOWNSTREAM;
 import static com.yunfeng.tools.phoneproxy.http.ProxyTask.StreamType.UPSTREAM;
@@ -20,21 +22,19 @@ import static com.yunfeng.tools.phoneproxy.http.ProxyTask.StreamType.UPSTREAM;
 /**
  * 将客户端发送过来的数据转发给请求的服务器端，并将服务器返回的数据转发给客户端 *
  */
-public final class ProxyTask implements Runnable {
+public class ProxyTask implements Runnable {
     private Socket socketIn;
     private Socket socketOut;
     private long totalUpload = 0l;//总计上行比特数
     private long totalDownload = 0l;//总计下行比特数
     private ProxyEventListener listener;
+    private StringBuilder builder = new StringBuilder();
+    private DataEventObject data = new DataEventObject();
 
     public ProxyTask(Socket socket, ProxyEventListener listener) {
         this.socketIn = socket;
         this.listener = listener;
     }
-
-    private StringBuilder builder = new StringBuilder();
-
-    private DataEventObject data = new DataEventObject();
 
     @Override
     public void run() {
@@ -57,32 +57,33 @@ public final class ProxyTask implements Runnable {
             if (header.getHost() == null || header.getPort() == null) {
                 osIn.write(Const.SERVERERROR.getBytes());
                 osIn.flush();
-                return;
-            }
-            // 查找主机和端口
-            socketOut = new Socket(header.getHost(), Integer.parseInt(header.getPort()));
-            socketOut.setKeepAlive(true);
-            socketOut.setSoTimeout(6 * 1000);
-            InputStream isOut = socketOut.getInputStream();
-            OutputStream osOut = socketOut.getOutputStream();
-            //新开一个线程将返回的数据转发给客户端,串行会出问题，尚没搞明白原因
-            Thread ot = new Thread(new ReadWriteThread(isOut, osIn, DOWNSTREAM));
-            ot.start();
-            if (header.getMethod().equals(HttpHeader.METHOD_CONNECT)) {
-                // 将已联通信号返回给请求页面
-                osIn.write(Const.AUTHORED.getBytes());
-                osIn.flush();
             } else {
-                //http请求需要将请求头部也转发出去
-                byte[] headerData = header.toString().getBytes();
-                totalUpload += headerData.length;
-                osOut.write(headerData);
-                osOut.flush();
+                // 查找主机和端口
+                socketOut = new Socket(header.getHost(), Integer.parseInt(header.getPort()));
+                socketOut.setKeepAlive(true);
+                socketOut.setSoTimeout(6 * 1000);
+                InputStream isOut = socketOut.getInputStream();
+                OutputStream osOut = socketOut.getOutputStream();
+                //新开一个线程将返回的数据转发给客户端,串行会出问题，尚没搞明白原因
+
+                Future f = ThreadPool.getInstance().submit(new ReadWriteThread(isOut, osIn, DOWNSTREAM));
+
+                if (header.getMethod().equals(HttpHeader.METHOD_CONNECT)) {
+                    // 将已联通信号返回给请求页面
+                    osIn.write(Const.AUTHORED.getBytes());
+                    osIn.flush();
+                } else {
+                    //http请求需要将请求头部也转发出去
+                    byte[] headerData = header.toString().getBytes();
+                    totalUpload += headerData.length;
+                    osOut.write(headerData);
+                    osOut.flush();
+                }
+                //读取客户端请求过来的数据转发给服务器
+                ThreadPool.getInstance().submit(new ReadWriteThread(isIn, osOut, UPSTREAM));
+                //等待向客户端转发的线程结束
+                f.get();
             }
-            //读取客户端请求过来的数据转发给服务器
-            new Thread(new ReadWriteThread(isIn, osOut, UPSTREAM)).start();
-            //等待向客户端转发的线程结束
-            ot.join();
         } catch (Exception e) {
             listener.onEvent(new ProxyEvent(ProxyEvent.EventType.LOG_EVENT, "ProxyTask run(); error" + e.getMessage()));
             if (!socketIn.isOutputShutdown()) {
