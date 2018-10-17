@@ -154,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        socketProxy.onDestory(this);
         super.onDestroy();
     }
 
