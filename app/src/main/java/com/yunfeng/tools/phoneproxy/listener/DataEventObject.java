@@ -8,11 +8,6 @@ public class DataEventObject {
     private long upStream;
     private long downStream;
 
-    public DataEventObject(long totalUpload, long totalDownload) {
-        this.upStream = totalUpload;
-        this.downStream = totalDownload;
-    }
-
     public long getDownStream() {
         return downStream;
     }
