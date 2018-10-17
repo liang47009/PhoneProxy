@@ -80,7 +80,7 @@ public final class ProxyTask implements Runnable {
                 osOut.flush();
             }
             //读取客户端请求过来的数据转发给服务器
-            new Thread(new ReadWriteThread(isIn, osOut, DOWNSTREAM)).start();
+            new Thread(new ReadWriteThread(isIn, osOut, UPSTREAM)).start();
             //等待向客户端转发的线程结束
             ot.join();
         } catch (Exception e) {
