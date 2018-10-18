@@ -21,4 +21,10 @@ public class Const {
      */
     public static final String SERVERERROR = "HTTP/1.1 500 Connection FAILED\r\n\r\n";
 
+    public static final int MAXLINESIZE = 4096;
+    public static final String METHOD_GET = "GET";
+    public static final String METHOD_POST = "POST";
+    public static final String METHOD_HEAD = "HEAD";
+    public static final String METHOD_CONNECT = "CONNECT";
+
 }

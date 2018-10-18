@@ -2,6 +2,8 @@ package com.yunfeng.tools.phoneproxy.http;
 
 import android.util.Log;
 
+import com.yunfeng.tools.phoneproxy.util.Const;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -15,11 +17,6 @@ public final class HttpHeader {
     private String method;
     private String host;
     private String port;
-    private static final int MAXLINESIZE = 4096;
-    private static final String METHOD_GET = "GET";
-    private static final String METHOD_POST = "POST";
-    private static final String METHOD_HEAD = "HEAD";
-    public static final String METHOD_CONNECT = "CONNECT";
 
     private HttpHeader() {
     }
@@ -29,20 +26,21 @@ public final class HttpHeader {
      */
     public static HttpHeader readHeader(InputStream in) throws IOException {
         HttpHeader header = new HttpHeader();
-        StringBuilder sb = new StringBuilder();        //先读出交互协议来
-        char c = 0;
+        StringBuilder sb = new StringBuilder();
+        char c;
         while ((c = (char) in.read()) != '\n') {
             sb.append(c);
-            if (sb.length() == MAXLINESIZE) {//不接受过长的头部字段
+            if (sb.length() == Const.MAXLINESIZE) {//不接受过长的头部字段
                 break;
             }
-        }        //如能识别出请求方式则则继续，不能则退出
+        }
+        //如能识别出请求方式则则继续，不能则退出
         if (header.addHeaderMethod(sb.toString()) != null) {
             do {
-                sb = new StringBuilder();
+                sb.delete(0, sb.length());
                 while ((c = (char) in.read()) != '\n') {
                     sb.append(c);
-                    if (sb.length() == MAXLINESIZE) {//不接受过长的头部字段
+                    if (sb.length() == Const.MAXLINESIZE) {//不接受过长的头部字段
                         break;
                     }
                 }
@@ -65,7 +63,7 @@ public final class HttpHeader {
         if (str.startsWith("Host") || str.startsWith("host")) {//解析主机和端口
             String[] hosts = str.split(":");
             host = hosts[1].trim();
-            if (method.endsWith(METHOD_CONNECT)) {
+            if (method.endsWith(Const.METHOD_CONNECT)) {
                 port = hosts.length == 3 ? hosts[2] : "443";//https默认端口为443
             } else {
                 port = hosts.length == 3 ? hosts[2] : "80";//http默认端口为80
@@ -80,14 +78,9 @@ public final class HttpHeader {
     private String addHeaderMethod(String temp) {
         String str = temp.toUpperCase().trim().replaceAll("\r", "");
         header.add(str);
-        if (str.startsWith(METHOD_CONNECT)) {//https链接请求代理
-            method = METHOD_CONNECT;
-        } else if (str.startsWith(METHOD_GET)) {//http GET请求
-            method = METHOD_GET;
-        } else if (str.startsWith(METHOD_POST)) {//http POST请求
-            method = METHOD_POST;
-        } else if (str.startsWith(METHOD_HEAD)) {
-            method = METHOD_HEAD;
+        String[] request_method = str.split(" ");
+        if (request_method.length > 0) {
+            method = request_method[0];
         }
         Log.e("PP", "addHeaderMethod: " + temp);
         return method;

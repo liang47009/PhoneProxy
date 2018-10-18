@@ -68,7 +68,7 @@ public class ProxyTask implements Runnable {
 
                 Future f = ThreadPool.getInstance().submit(new ReadWriteThread(isOut, osIn, DOWNSTREAM));
 
-                if (header.getMethod().equals(HttpHeader.METHOD_CONNECT)) {
+                if (header.getMethod().equals(Const.METHOD_CONNECT)) {
                     // 将已联通信号返回给请求页面
                     osIn.write(Const.AUTHORED.getBytes());
                     osIn.flush();
