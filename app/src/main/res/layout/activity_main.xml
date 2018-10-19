@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:ads="http://schemas.android.com/apk/res-auto"
+    xmlns:skin="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:layout_margin="8dp"
-    android:gravity="center"
+    android:gravity="center_horizontal"
     android:orientation="vertical">
 
     <!-- view for AdMob Banner Ad -->
@@ -16,11 +17,12 @@
         ads:adSize="BANNER"
         ads:adUnitId="@string/banner_ad_unit_id" />
 
-    <ListView
+    <com.yunfeng.tools.phoneproxy.view.widget.CustomListView
         android:id="@+id/list_ips"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone" />
+        android:visibility="gone"
+        skin:background="@drawable/kuang2" />
 
     <LinearLayout
         android:layout_width="match_parent"

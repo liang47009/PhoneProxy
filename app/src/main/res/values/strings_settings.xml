@@ -9,8 +9,14 @@
         based on your message history
     </string>
 
+    <string name="pref_title_change_skin">Enable Skin Change</string>
+    <string name="pref_description_change_skin">Change Skin Dynamic</string>
+
     <string name="pref_title_proxy_port">Default Proxy Port</string>
     <string name="pref_default_proxy_port">8888</string>
+
+    <string name="pref_download_buffer_size">1</string>
+    <string name="pref_title_download_buffer_size">Set download buffer size(M)</string>
 
     <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
     <string-array name="pref_example_list_titles">
@@ -23,6 +29,21 @@
         <item>0</item>
         <item>-1</item>
     </string-array>
+
+    <string name="pref_title_skin_choose">Choose a skin</string>
+    <string-array name="pref_example_list_skins">
+        <item>white</item>
+        <item>red</item>
+        <item>blue</item>
+        <item>green</item>
+    </string-array>
+    <string-array name="pref_example_list_skins_values">
+        <item>white</item>
+        <item>red</item>
+        <item>blue</item>
+        <item>green</item>
+    </string-array>
+
     <!-- Example settings for Data & Sync -->
     <string name="pref_header_data_sync">Data &amp; sync</string>
 

@@ -1,11 +1,10 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!--<SwitchPreference
+    <SwitchPreference
         android:defaultValue="true"
-        android:key="example_switch"
-        android:summary="@string/pref_description_social_recommendations"
-        android:title="@string/pref_title_social_recommendations" />-->
-
+        android:key="change_skin_switch"
+        android:summary="@string/pref_description_change_skin"
+        android:title="@string/pref_title_change_skin" />
     <!-- NOTE: EditTextPreference accepts EditText attributes. -->
     <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
     <EditTextPreference
@@ -17,16 +16,25 @@
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:title="@string/pref_title_proxy_port" />
+    <EditTextPreference
+        android:capitalize="words"
+        android:defaultValue="@string/pref_download_buffer_size"
+        android:inputType="number"
+        android:key="default_buffer_size"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_download_buffer_size" />
     <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
          dismiss it. -->
     <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
-    <!--<ListPreference
+    <ListPreference
         android:defaultValue="-1"
-        android:entries="@array/pref_example_list_titles"
-        android:entryValues="@array/pref_example_list_values"
-        android:key="example_list"
+        android:entries="@array/pref_example_list_skins"
+        android:entryValues="@array/pref_example_list_skins_values"
+        android:key="example_skin_list"
         android:negativeButtonText="@null"
         android:positiveButtonText="@null"
-        android:title="@string/pref_title_add_friends_to_messages" />-->
+        android:title="@string/pref_title_skin_choose" />
 
 </PreferenceScreen>

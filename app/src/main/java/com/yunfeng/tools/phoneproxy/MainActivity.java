@@ -9,8 +9,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
@@ -20,7 +22,11 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ActionBarContextView;
+import android.text.TextUtils;
+import android.util.AttributeSet;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,67 +44,96 @@ import com.yunfeng.tools.phoneproxy.http.SocketProxy;
 import com.yunfeng.tools.phoneproxy.listener.AdMobListener;
 import com.yunfeng.tools.phoneproxy.listener.MyProxyEventListener;
 import com.yunfeng.tools.phoneproxy.receiver.InternetChangeBroadcastReceiver;
+import com.yunfeng.tools.phoneproxy.util.Const;
+import com.yunfeng.tools.phoneproxy.util.NativeColor;
 import com.yunfeng.tools.phoneproxy.util.PermissionHelper;
 import com.yunfeng.tools.phoneproxy.util.Utils;
 import com.yunfeng.tools.phoneproxy.view.SettingsActivity;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     public static final int MSG_INTERNETCHANGED = 1;
+    public static final int MSG_INVALIDATION = 1111;
 
     private MyProxyEventListener listener;
     private InternetChangeBroadcastReceiver receiver;
     private NetworkSimpleAdapter simpleAdapter = null;
-    private static final SocketProxy socketProxy = new SocketProxy();
+    private String color;
+    private Boolean enableChangeSkin = true;
+    public static final SocketProxy socketProxy = new SocketProxy();
 
     private static final MainHandler handler = new MainHandler();
 
-    private static class MainHandler extends Handler {
-        private WeakReference<MainActivity> weakReference;
+    private List<String> viewPrefixList = new ArrayList<>(4);
 
-        private void setWeakReference(MainActivity mainActivity) {
-            weakReference = new WeakReference<>(mainActivity);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            MainActivity activity = weakReference.get();
-            if (null != activity) {
-                switch (msg.what) {
-                    case MSG_INTERNETCHANGED:
-                        activity.simpleAdapter.notifyDataSetChanged();
-                        break;
-                }
-            }
-        }
-    }
-
-    public static Handler getHandler() {
-        return handler;
+    {
+        viewPrefixList.add("android.view.");
+        viewPrefixList.add("android.widget.");
+        viewPrefixList.add("android.webkit.");
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        updateConfig();
         setContentView(R.layout.activity_main);
+
         handler.setWeakReference(this);
+
         Utils.initFireBase(this);
+
         PermissionHelper.request(this);
         initView(this);
-        //https://phoneproxy.tools.yunfeng.com/.well-known/assetlinks.json
-        // ATTENTION: This was auto-generated to handle app links.
-        Intent appLinkIntent = this.getIntent();
-        String appLinkAction = appLinkIntent.getAction();
-        Uri appLinkData = appLinkIntent.getData();
+
         listener = new MyProxyEventListener(this);
         if (socketProxy.isStartUp()) {
             View view = this.findViewById(R.id.start_proxy);
             view.setEnabled(false);
         }
+
+        //https://phoneproxy.tools.yunfeng.com/.well-known/assetlinks.json
+        // ATTENTION: This was auto-generated to handle app links.
+        Intent appLinkIntent = this.getIntent();
+        String appLinkAction = appLinkIntent.getAction();
+        Uri appLinkData = appLinkIntent.getData();
+    }
+
+    @Override
+    public View onCreateView(String name, Context context, AttributeSet attrs) {
+        View view = null;
+        if (enableChangeSkin) {// enable skin change
+            for (String prefix : viewPrefixList) {
+                try {
+                    if (-1 == name.indexOf('.')) {
+                        view = LayoutInflater.from(context).createView(name, prefix, attrs);
+                    } else {
+                        view = LayoutInflater.from(context).createView(name, null, attrs);
+                    }
+                } catch (Exception e) {
+                    Log.e(Const.TAG, "onCreateView error: " + e.getMessage());
+                }
+                if (null != view) {
+                    break;
+                }
+            }
+            if (view != null) {
+                String theme = attrs.getAttributeValue("http://schemas.android.com/apk/res-auto", "background");
+                if (TextUtils.isEmpty(theme)) {
+                    Integer id = NativeColor.getNativeColorByName(color);
+                    if (null != id) {
+                        view.setBackgroundColor(getResources().getColor(id));
+                    }
+                } else {
+                    theme = theme.substring(1, theme.length());
+                    view.setBackgroundDrawable(getResources().getDrawable(Integer.valueOf(theme)));
+                }
+            }
+        }
+        return view;
     }
 
     private void initView(Activity activity) {
@@ -232,6 +267,43 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    private static class MainHandler extends Handler {
+        private WeakReference<MainActivity> weakReference;
+
+        private void setWeakReference(MainActivity mainActivity) {
+            weakReference = new WeakReference<>(mainActivity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            MainActivity activity = weakReference.get();
+            if (null != activity) {
+                switch (msg.what) {
+                    case MSG_INTERNETCHANGED:
+                        activity.simpleAdapter.notifyDataSetChanged();
+                        break;
+                    case MSG_INVALIDATION:
+                        activity.updateConfig();
+                        activity.recreate();
+                        break;
+                }
+            }
+        }
+    }
+
+    private void updateConfig() {
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        color = preferences.getString("example_skin_list", "white");
+        enableChangeSkin = preferences.getBoolean("change_skin_switch", true);
+        String bufferSize = preferences.getString("default_buffer_size", "1");
+        socketProxy.setBufferSize(Integer.valueOf(bufferSize));
+    }
+
+    public static Handler getHandler() {
+        return handler;
     }
 
 }

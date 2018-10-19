@@ -28,11 +28,13 @@ public class ProxyTask implements Runnable {
     private long totalUpload = 0l;//总计上行比特数
     private long totalDownload = 0l;//总计下行比特数
     private ProxyEventListener listener;
+    private int bufferSize = 1;
     private StringBuilder builder = new StringBuilder();
     private DataEventObject data = new DataEventObject();
 
-    public ProxyTask(Socket socket, ProxyEventListener listener) {
+    public ProxyTask(Socket socket, int bufferSize, ProxyEventListener listener) {
         this.socketIn = socket;
+        this.bufferSize = bufferSize;
         this.listener = listener;
     }
 
@@ -135,7 +137,7 @@ public class ProxyTask implements Runnable {
 
         @Override
         public void run() {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[bufferSize * 1024];
             try {
                 int len;
                 while ((len = in.read(buffer)) != -1) {

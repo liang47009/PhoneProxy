@@ -21,6 +21,8 @@ public class SocketProxy {
     private ServerSocket serverSocket = null;
     private Future<?> serverFuture = null;
 
+    private int bufferSize = 1;
+
     public void startup(final String port, final ProxyEventListener listener) {
         serverFuture = ThreadPool.getInstance().submit(new ThreadPool.Job<Object>() {
             @Override
@@ -34,7 +36,7 @@ public class SocketProxy {
                             Socket socket = serverSocket.accept();
                             socket.setKeepAlive(true);
                             //加入任务列表，等待处理
-                            ThreadPool.getInstance().submit(new ProxyTask(socket, listener));
+                            ThreadPool.getInstance().submit(new ProxyTask(socket, bufferSize, listener));
                         }
                     } catch (Exception e) {
                         listener.onEvent(new ProxyEvent(ProxyEvent.EventType.ERROR_EVENT, new ErrorEventObject(e.getMessage(), e)));
@@ -67,4 +69,13 @@ public class SocketProxy {
             }
         }
     }
+
+    public int getBufferSize() {
+        return bufferSize;
+    }
+
+    public void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
+
 }
