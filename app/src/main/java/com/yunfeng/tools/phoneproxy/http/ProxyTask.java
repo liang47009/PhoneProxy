@@ -63,7 +63,6 @@ public class ProxyTask implements Runnable {
                 // 查找主机和端口
                 socketOut = new Socket(header.getHost(), Integer.parseInt(header.getPort()));
                 socketOut.setKeepAlive(true);
-                socketOut.setSoTimeout(6 * 1000);
                 InputStream isOut = socketOut.getInputStream();
                 OutputStream osOut = socketOut.getOutputStream();
                 //新开一个线程将返回的数据转发给客户端,串行会出问题，尚没搞明白原因
