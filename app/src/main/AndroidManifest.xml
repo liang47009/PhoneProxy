@@ -13,13 +13,13 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme.NoActionBar">
         <meta-data
             android:name="asset_statements"
             android:resource="@string/asset_statements" />
 
         <activity
-            android:name="com.yunfeng.tools.phoneproxy.MainActivity"
+            android:name="com.yunfeng.tools.phoneproxy.SidebarActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|locale|layoutDirection"
             android:label="@string/app_name"
             android:launchMode="singleTask"
@@ -28,6 +28,14 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.yunfeng.tools.phoneproxy.MainActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|locale|layoutDirection"
+            android:label="@string/app_name"
+            android:launchMode="singleTask"
+            android:screenOrientation="sensorPortrait">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
