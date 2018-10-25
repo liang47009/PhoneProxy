@@ -2,15 +2,19 @@ package com.yunfeng.tools.phoneproxy.util;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.widget.SimpleAdapter;
 
 import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.yunfeng.tools.phoneproxy.BackupMainActivity;
 import com.yunfeng.tools.phoneproxy.MainActivity;
+import com.yunfeng.tools.phoneproxy.ProxyFragment;
+import com.yunfeng.tools.phoneproxy.viewmodel.ProxyViewModel;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,33 +34,37 @@ public class Utils {
 
     private final static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.CHINA);
 
-    public static void internetChange(Context context) {
-        ThreadPool.getInstance().submit(new ThreadPool.Job<Object>() {
-            @Override
-            public Object run(ThreadPool.JobContext jc) throws Exception {
-                synchronized (listems) {
-                    listems.clear();
-                    Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
-                    while (nis.hasMoreElements()) {
-                        NetworkInterface ni = nis.nextElement();
-                        Enumeration<InetAddress> ias = ni.getInetAddresses();
-                        while (ias.hasMoreElements()) {
-                            InetAddress ia = ias.nextElement();
-                            String addr = ia.getHostAddress();
-                            String hostName = ia.getHostName();
-                            Logger.d("addr: " + addr + ", hostName: " + hostName);
-                            if (!checkDataExsit("name", addr)) {
-                                Map<String, Object> listem = new HashMap<String, Object>();
-                                listem.put("name", addr);
-                                listems.add(listem);
+    public static void internetChange(Context context, Intent intent) {
+        if (context instanceof BackupMainActivity) {
+            ThreadPool.getInstance().submit(new ThreadPool.Job<Object>() {
+                @Override
+                public Object run(ThreadPool.JobContext jc) throws Exception {
+                    synchronized (listems) {
+                        listems.clear();
+                        Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
+                        while (nis.hasMoreElements()) {
+                            NetworkInterface ni = nis.nextElement();
+                            Enumeration<InetAddress> ias = ni.getInetAddresses();
+                            while (ias.hasMoreElements()) {
+                                InetAddress ia = ias.nextElement();
+                                String addr = ia.getHostAddress();
+                                String hostName = ia.getHostName();
+                                Logger.d("addr: " + addr + ", hostName: " + hostName);
+                                if (!checkDataExsit("name", addr)) {
+                                    Map<String, Object> listem = new HashMap<String, Object>();
+                                    listem.put("name", addr);
+                                    listems.add(listem);
+                                }
                             }
                         }
                     }
+                    BackupMainActivity.getHandler().sendEmptyMessage(BackupMainActivity.MSG_INTERNETCHANGED);
+                    return null;
                 }
-                MainActivity.getHandler().sendEmptyMessage(MainActivity.MSG_INTERNETCHANGED);
-                return null;
-            }
-        });
+            });
+        } else if (context instanceof MainActivity) {
+            Logger.d("internetChanged!");
+        }
     }
 
     private static boolean checkDataExsit(Object key, Object value) {
@@ -87,5 +95,41 @@ public class Utils {
 
     public static String formatDate(Date date) {
         return sdf.format(date);
+    }
+
+    public static void updateViewModel(final ProxyFragment fragment) {
+        ThreadPool.getInstance().submit(new ThreadPool.Job<List<Map<String, Object>>>() {
+            @Override
+            public List<Map<String, Object>> run(ThreadPool.JobContext jc) {
+                List<Map<String, Object>> listems = new ArrayList<Map<String, Object>>();
+                try {
+                    Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
+                    while (nis.hasMoreElements()) {
+                        NetworkInterface ni = nis.nextElement();
+                        Enumeration<InetAddress> ias = ni.getInetAddresses();
+                        while (ias.hasMoreElements()) {
+                            InetAddress ia = ias.nextElement();
+                            String addr = ia.getHostAddress();
+                            String hostName = ia.getHostName();
+                            Logger.d("addr: " + addr + ", hostName: " + hostName);
+                            if (!checkDataExsit("name", addr)) {
+                                Map<String, Object> listem = new HashMap<String, Object>();
+                                listem.put("name", addr);
+                                listems.add(listem);
+                            }
+                        }
+                    }
+                } catch (SocketException e) {
+                    e.printStackTrace();
+                }
+                return listems;
+            }
+        }, new FutureListener<List<Map<String, Object>>>() {
+            @Override
+            public void onFutureDone(Future<List<Map<String, Object>>> future) {
+//                mViewModel.getListItems().setValue(future.get());
+                fragment.setNetworkInterface(future.get());
+            }
+        });
     }
 }

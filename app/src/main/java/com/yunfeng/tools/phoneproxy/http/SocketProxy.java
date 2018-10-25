@@ -1,6 +1,7 @@
 package com.yunfeng.tools.phoneproxy.http;
 
 import android.app.Activity;
+import android.content.Context;
 
 import com.yunfeng.tools.phoneproxy.listener.ErrorEventObject;
 import com.yunfeng.tools.phoneproxy.listener.ProxyEvent;
@@ -57,7 +58,7 @@ public class SocketProxy {
         return starting;
     }
 
-    public void onDestory(Activity activity) {
+    public void onDestory(Context context) {
         if (serverFuture != null) {
             serverFuture.cancel();
         }

@@ -17,7 +17,7 @@ import com.yunfeng.tools.phoneproxy.util.Utils;
 public class InternetChangeBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Utils.internetChange(context);
+        Utils.internetChange(context, intent);
 //        //检测API是不是小于23，因为到了API23之后getNetworkInfo(int networkType)方法被弃用
 //        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP) {
 //            //获得ConnectivityManager对象

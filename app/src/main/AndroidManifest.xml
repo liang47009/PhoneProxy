@@ -19,7 +19,14 @@
             android:resource="@string/asset_statements" />
 
         <activity
-            android:name="com.yunfeng.tools.phoneproxy.SidebarActivity"
+            android:name="com.yunfeng.tools.phoneproxy.BackupMainActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|locale|layoutDirection"
+            android:label="@string/app_name"
+            android:launchMode="singleTask"
+            android:screenOrientation="sensorPortrait" />
+
+        <activity
+            android:name="com.yunfeng.tools.phoneproxy.MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|locale|layoutDirection"
             android:label="@string/app_name"
             android:launchMode="singleTask"
@@ -28,14 +35,6 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <activity
-            android:name="com.yunfeng.tools.phoneproxy.MainActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|locale|layoutDirection"
-            android:label="@string/app_name"
-            android:launchMode="singleTask"
-            android:screenOrientation="sensorPortrait">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -71,11 +70,16 @@
         </activity>
 
         <receiver android:name="com.yunfeng.tools.phoneproxy.receiver.InternetChangeBroadcastReceiver" />
+
         <service
             android:name="com.yunfeng.tools.phoneproxy.service.DataStreamService"
             android:enabled="true"
             android:exported="false"
             android:process=":dss" />
+        <service
+            android:name="com.yunfeng.tools.phoneproxy.service.ProxyService"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>

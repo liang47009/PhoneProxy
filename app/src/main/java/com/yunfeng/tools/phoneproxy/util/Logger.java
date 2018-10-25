@@ -11,6 +11,10 @@ public class Logger {
         android.util.Log.d("PhoneProxy", msg.toString());
     }
 
+    public static void e(Object msg) {
+        android.util.Log.e("PhoneProxy", msg.toString());
+    }
+
     public static void e(Object msg, Throwable cause) {
         android.util.Log.d("PhoneProxy", msg.toString(), cause);
     }

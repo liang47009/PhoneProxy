@@ -35,5 +35,13 @@ public class ProxyEvent {
         this.data = data;
     }
 
+    @Override
+    public String toString() {
+        return "ProxyEvent{" +
+                "data=" + data +
+                ", eventType=" + eventType +
+                '}';
+    }
+
 
 }

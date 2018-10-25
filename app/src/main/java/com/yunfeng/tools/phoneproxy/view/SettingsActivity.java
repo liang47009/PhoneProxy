@@ -23,6 +23,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
 
+import com.yunfeng.tools.phoneproxy.BackupMainActivity;
 import com.yunfeng.tools.phoneproxy.MainActivity;
 import com.yunfeng.tools.phoneproxy.R;
 import com.yunfeng.tools.phoneproxy.util.Const;
@@ -82,7 +83,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 Log.e(Const.TAG, "unhandled preference: " + preference);
             }
 
-            MainActivity.getHandler().sendEmptyMessage(MainActivity.MSG_INVALIDATION);
+            BackupMainActivity.getHandler().sendEmptyMessage(BackupMainActivity.MSG_INVALIDATION);
             preference.setSummary(stringValue);
             return true;
         }

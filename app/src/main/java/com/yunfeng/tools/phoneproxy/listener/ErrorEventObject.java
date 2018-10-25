@@ -29,4 +29,12 @@ public class ErrorEventObject {
     public void setErrorMsg(String errorMsg) {
         this.errorMsg = errorMsg;
     }
+
+    @Override
+    public String toString() {
+        return "ErrorEventObject{" +
+                "errorMsg='" + errorMsg + '\'' +
+                ", throwable=" + throwable +
+                '}';
+    }
 }

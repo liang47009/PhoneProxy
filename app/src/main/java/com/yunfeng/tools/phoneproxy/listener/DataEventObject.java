@@ -23,4 +23,12 @@ public class DataEventObject {
     public void setUpStream(long upStream) {
         this.upStream = upStream;
     }
+
+    @Override
+    public String toString() {
+        return "DataEventObject{" +
+                "upStream=" + upStream +
+                ", downStream=" + downStream +
+                '}';
+    }
 }
