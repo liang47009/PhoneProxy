@@ -4,10 +4,12 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
+import com.yunfeng.tools.phoneproxy.R;
 import com.yunfeng.tools.phoneproxy.http.SocketProxy;
 import com.yunfeng.tools.phoneproxy.listener.ProxyEvent;
 import com.yunfeng.tools.phoneproxy.listener.ProxyEventListener;
 import com.yunfeng.tools.phoneproxy.util.Logger;
+import com.yunfeng.tools.phoneproxy.util.NotificationUtils;
 
 public class ProxyService extends Service {
     private final SocketProxy socketProxy = new SocketProxy();
@@ -36,6 +38,7 @@ public class ProxyService extends Service {
                 }
             }
         });
+        NotificationUtils.showNotifyOnlyText(this, R.mipmap.ic_launcher, R.mipmap.icon);
     }
 
     @Override

@@ -36,6 +36,7 @@ import com.yunfeng.tools.phoneproxy.listener.ErrorEventObject;
 import com.yunfeng.tools.phoneproxy.listener.ProxyEvent;
 import com.yunfeng.tools.phoneproxy.service.ProxyService;
 import com.yunfeng.tools.phoneproxy.util.Logger;
+import com.yunfeng.tools.phoneproxy.util.NotificationUtils;
 import com.yunfeng.tools.phoneproxy.util.Utils;
 import com.yunfeng.tools.phoneproxy.viewmodel.ProxyViewModel;
 
@@ -62,12 +63,22 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Ser
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+    }
+
+    @Override
     public void onClick(View v) {
         if (v.getId() == R.id.start_proxy) {
-            v.getContext().bindService(new Intent(v.getContext(), ProxyService.class), this, Context.BIND_AUTO_CREATE);
-            v.setEnabled(false);
+            if (!isServiceRunning(v.getContext(), ProxyService.class.getName())) {
+                v.getContext().bindService(new Intent(v.getContext(), ProxyService.class), this, Context.BIND_AUTO_CREATE);
+                v.setEnabled(false);
+            }
         } else if (v.getId() == R.id.stop_proxy) {
-            v.getContext().unbindService(this);
+            if (isServiceRunning(v.getContext(), ProxyService.class.getName())) {
+                v.getContext().unbindService(this);
+                NotificationUtils.clearNotify(v.getContext());
+            }
             this.contentView.findViewById(R.id.start_proxy).setEnabled(true);
         } else if (v.getId() == R.id.clearLog) {
             EditText logEditTextView = (EditText) contentView.findViewById(R.id.log_editText);
@@ -120,7 +131,6 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Ser
                         listems.clear();
                         listems.addAll(maps);
                         simpleAdapter.notifyDataSetChanged();
-                        Logger.e("onChanged: " + maps);
                     }
                 });
             }
@@ -139,6 +149,9 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Ser
 
     @Override
     public void onDestroy() {
+        if (isServiceRunning(this.contentView.getContext(), ProxyService.class.getName())) {
+            this.contentView.getContext().unbindService(this);
+        }
         super.onDestroy();
     }
 
@@ -157,7 +170,6 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Ser
             }
             for (ActivityManager.RunningServiceInfo info : serviceList) {
                 String temp = info.service.getClassName();
-                Logger.e(temp);
                 if (temp.contains(className)) {
                     isRunning = true;
                     break;

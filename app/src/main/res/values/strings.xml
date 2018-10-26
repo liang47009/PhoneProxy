@@ -23,4 +23,6 @@
     <string name="sidebar_menu_remote_manager">Remote Manager</string>
     <string name="sidebar_menu_proxy">Proxy</string>
     <string name="sidebar_menu_title_netwrok">NetWork</string>
+    <string name="channel_name">proxy status</string>
+    <string name="channel_description">notification for proxy status</string>
 </resources>

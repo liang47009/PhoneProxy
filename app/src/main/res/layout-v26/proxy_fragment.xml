@@ -37,7 +37,6 @@
             android:layout_height="wrap_content"
             android:focusable="true"
             android:gravity="center"
-            android:onClick="startProxy"
             android:text="@string/start_proxy" />
 
         <Button
@@ -47,23 +46,22 @@
             android:layout_height="wrap_content"
             android:focusable="true"
             android:gravity="center"
-            android:onClick="stopProxy"
             android:text="@string/stop_proxy" />
 
     </LinearLayout>
 
     <Button
+        android:id="@+id/clearLog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="clearLog"
         android:text="@string/clear_log" />
 
     <TextView
         android:id="@+id/data_textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:hint="@string/this_is_all_data_statistics" />
 
     <ScrollView
@@ -74,12 +72,12 @@
             android:id="@+id/log_editText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:autofillHints=""
             android:ems="10"
             android:enabled="false"
             android:focusable="false"
             android:hint="@string/this_is_log"
             android:inputType="textMultiLine"
-            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"
-            android:autofillHints="" />
+            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small" />
     </ScrollView>
 </LinearLayout>
