@@ -5,7 +5,6 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -27,7 +26,6 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.yunfeng.tools.phoneproxy.adapter.NetworkSimpleAdapter;
 import com.yunfeng.tools.phoneproxy.listener.AdMobListener;
-import com.yunfeng.tools.phoneproxy.listener.DataEventObject;
 import com.yunfeng.tools.phoneproxy.listener.ErrorEventObject;
 import com.yunfeng.tools.phoneproxy.listener.IProxyEventTask;
 import com.yunfeng.tools.phoneproxy.listener.ProxyEvent;
@@ -80,27 +78,32 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Her
         }
     }
 
+    private static final ProxyFragment pf = new ProxyFragment();
+
     public static ProxyFragment newInstance() {
-        return new ProxyFragment();
+        return pf;
+    }
+
+
+    class ProxyEventList implements ProxyEventListener {
+        @Override
+        public void onEvent(final ProxyEvent event) {
+            if (null != handler) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ProxyFragment.this.handlerProxyEvent(event);
+                    }
+                });
+            }
+        }
     }
 
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.start_proxy) {
             if (proxyTask != null) {
-                proxyTask.start(new ProxyEventListener() {
-                    @Override
-                    public void onEvent(final ProxyEvent event) {
-                        if (null != handler) {
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    ProxyFragment.this.handlerProxyEvent(event);
-                                }
-                            });
-                        }
-                    }
-                });
+                proxyTask.start(new ProxyEventList());
             }
         } else if (v.getId() == R.id.stop_proxy) {
 //            if (isServiceRunning(v.getContext(), ProxyService.class.getName())) {

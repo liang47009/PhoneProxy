@@ -8,30 +8,30 @@ android {
         applicationId "com.yunfeng.tools.phoneproxy"
         minSdkVersion 15
         targetSdkVersion 27
-        versionCode 9
-        versionName "2.1"
+        versionCode 10
+        versionName "2.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     //签名
-//    signingConfigs {
-//        debug {
-//            keyAlias 'xxxxxxxxxxxxx'
-//            keyPassword 'xxxxxxxxxxxxx'
-//            storeFile file('xxxxxxxxxxxxx')
-//            storePassword 'xxxxxxxxxxxxx'
-//        }
-//        release {
-//            keyAlias 'xxxxxxxxxxxxx'
-//            keyPassword 'xxxxxxxxxxxxx'
-//            storeFile file('xxxxxxxxxxxxx')
-//            storePassword 'xxxxxxxxxxxxx'
-//        }
-//    }
+    signingConfigs {
+        debug {
+            keyAlias 'phoneproxy'
+            keyPassword 'xiayunfeng'
+            storeFile file('phoneproxy.jks')
+            storePassword 'xiayunfeng'
+        }
+        release {
+            keyAlias 'phoneproxy'
+            keyPassword 'xiayunfeng'
+            storeFile file('phoneproxy.jks')
+            storePassword 'xiayunfeng'
+        }
+    }
     buildTypes {
         debug {
             debuggable true
             jniDebuggable true
-//            signingConfig signingConfigs.release
+            signingConfig signingConfigs.release
             renderscriptDebuggable true
             minifyEnabled false
             pseudoLocalesEnabled false
@@ -42,7 +42,7 @@ android {
         release {
             debuggable false
             jniDebuggable false
-//            signingConfig signingConfigs.release
+            signingConfig signingConfigs.release
             renderscriptDebuggable false
             minifyEnabled false
             pseudoLocalesEnabled false
