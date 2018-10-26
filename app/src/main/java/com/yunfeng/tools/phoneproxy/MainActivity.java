@@ -24,6 +24,8 @@ import com.yunfeng.tools.phoneproxy.util.Logger;
 import java.util.HashMap;
 import java.util.Map;
 
+import xiaofei.library.hermes.Hermes;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -62,9 +64,10 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        fragments.put("ProxyFragment", ProxyFragment.newInstance());
+        ProxyFragment pf = ProxyFragment.newInstance();
+        fragments.put("ProxyFragment", pf);
         fragments.put("RemoteManagerFragment", RemoteManagerFragment.newInstance());
-
+        Hermes.setHermesListener(pf);
         changeFragment("ProxyFragment");
     }
 

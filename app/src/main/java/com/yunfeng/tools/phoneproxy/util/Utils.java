@@ -7,10 +7,8 @@ import android.os.Bundle;
 
 import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.yunfeng.tools.phoneproxy.BackupMainActivity;
 import com.yunfeng.tools.phoneproxy.MainActivity;
 import com.yunfeng.tools.phoneproxy.ProxyFragment;
-import com.yunfeng.tools.phoneproxy.viewmodel.ProxyViewModel;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -35,34 +33,7 @@ public class Utils {
     private final static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.CHINA);
 
     public static void internetChange(Context context, Intent intent) {
-        if (context instanceof BackupMainActivity) {
-            ThreadPool.getInstance().submit(new ThreadPool.Job<Object>() {
-                @Override
-                public Object run(ThreadPool.JobContext jc) throws Exception {
-                    synchronized (listems) {
-                        listems.clear();
-                        Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
-                        while (nis.hasMoreElements()) {
-                            NetworkInterface ni = nis.nextElement();
-                            Enumeration<InetAddress> ias = ni.getInetAddresses();
-                            while (ias.hasMoreElements()) {
-                                InetAddress ia = ias.nextElement();
-                                String addr = ia.getHostAddress();
-                                String hostName = ia.getHostName();
-                                Logger.d("addr: " + addr + ", hostName: " + hostName);
-                                if (!checkDataExsit("name", addr)) {
-                                    Map<String, Object> listem = new HashMap<String, Object>();
-                                    listem.put("name", addr);
-                                    listems.add(listem);
-                                }
-                            }
-                        }
-                    }
-                    BackupMainActivity.getHandler().sendEmptyMessage(BackupMainActivity.MSG_INTERNETCHANGED);
-                    return null;
-                }
-            });
-        } else if (context instanceof MainActivity) {
+        if (context instanceof MainActivity) {
             Logger.d("internetChanged!");
         }
     }

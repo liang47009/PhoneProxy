@@ -10,7 +10,6 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -23,8 +22,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
 
-import com.yunfeng.tools.phoneproxy.BackupMainActivity;
-import com.yunfeng.tools.phoneproxy.MainActivity;
 import com.yunfeng.tools.phoneproxy.R;
 import com.yunfeng.tools.phoneproxy.util.Const;
 
@@ -83,7 +80,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 Log.e(Const.TAG, "unhandled preference: " + preference);
             }
 
-            BackupMainActivity.getHandler().sendEmptyMessage(BackupMainActivity.MSG_INVALIDATION);
+//            BackupMainActivity.getHandler().sendEmptyMessage(BackupMainActivity.MSG_INVALIDATION);
             preference.setSummary(stringValue);
             return true;
         }

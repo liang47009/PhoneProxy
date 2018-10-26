@@ -1,18 +1,14 @@
 package com.yunfeng.tools.phoneproxy;
 
 import android.app.ActivityManager;
-import android.app.Service;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -33,10 +29,10 @@ import com.yunfeng.tools.phoneproxy.adapter.NetworkSimpleAdapter;
 import com.yunfeng.tools.phoneproxy.listener.AdMobListener;
 import com.yunfeng.tools.phoneproxy.listener.DataEventObject;
 import com.yunfeng.tools.phoneproxy.listener.ErrorEventObject;
+import com.yunfeng.tools.phoneproxy.listener.IProxyEventTask;
 import com.yunfeng.tools.phoneproxy.listener.ProxyEvent;
-import com.yunfeng.tools.phoneproxy.service.ProxyService;
+import com.yunfeng.tools.phoneproxy.listener.ProxyEventListener;
 import com.yunfeng.tools.phoneproxy.util.Logger;
-import com.yunfeng.tools.phoneproxy.util.NotificationUtils;
 import com.yunfeng.tools.phoneproxy.util.Utils;
 import com.yunfeng.tools.phoneproxy.viewmodel.ProxyViewModel;
 
@@ -45,17 +41,33 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class ProxyFragment extends Fragment implements View.OnClickListener, ServiceConnection {
+import xiaofei.library.hermes.Hermes;
+import xiaofei.library.hermes.HermesListener;
+import xiaofei.library.hermes.HermesService;
+
+public class ProxyFragment extends Fragment implements View.OnClickListener, HermesListener {
     private static final int PROXY_EVENT = 1001;
     public final List<Map<String, Object>> listems = new ArrayList<Map<String, Object>>();
 
     private long totalUpStream;
     private long totalDownStream;
-
+    private static IProxyEventTask proxyTask;
     private ProxyViewModel mViewModel;
     private NetworkSimpleAdapter simpleAdapter = null;
     private View contentView;
     private Handler handler;
+
+    @Override
+    public void onHermesConnected(Class<? extends HermesService> service) {
+        if (null == proxyTask) {
+            proxyTask = Hermes.newInstanceInService(HermesService.HermesService1.class, IProxyEventTask.class, "8888");
+        }
+    }
+
+    @Override
+    public void onHermesDisconnected(Class<? extends HermesService> service) {
+
+    }
 
     private static class ProxyHandler extends Handler {
         @Override
@@ -73,21 +85,30 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Ser
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-    }
-
-    @Override
     public void onClick(View v) {
         if (v.getId() == R.id.start_proxy) {
-            if (!isServiceRunning(v.getContext(), ProxyService.class.getName())) {
-                v.getContext().startService(new Intent(v.getContext(), ProxyService.class));
-                v.setEnabled(false);
+            if (proxyTask != null) {
+                proxyTask.start(new ProxyEventListener() {
+                    @Override
+                    public void onEvent(final ProxyEvent event) {
+                        if (null != handler) {
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ProxyFragment.this.handlerProxyEvent(event);
+                                }
+                            });
+                        }
+                    }
+                });
             }
         } else if (v.getId() == R.id.stop_proxy) {
-            if (isServiceRunning(v.getContext(), ProxyService.class.getName())) {
-                v.getContext().stopService(new Intent(v.getContext(), ProxyService.class));
-                NotificationUtils.clearNotify(v.getContext());
+//            if (isServiceRunning(v.getContext(), ProxyService.class.getName())) {
+//                v.getContext().stopService(new Intent(v.getContext(), ProxyService.class));
+//                NotificationUtils.clearNotify(v.getContext());
+//            }
+            if (proxyTask != null && proxyTask.isRunning()) {
+                proxyTask.stop();
             }
             this.contentView.findViewById(R.id.start_proxy).setEnabled(true);
         } else if (v.getId() == R.id.clearLog) {
@@ -102,6 +123,15 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Ser
         contentView = inflater.inflate(R.layout.proxy_fragment, container, false);
         if (null != contentView) {
             handler = new Handler();
+
+            Hermes.connect(contentView.getContext().getApplicationContext(), HermesService.HermesService0.class);
+            Hermes.connect(contentView.getContext().getApplicationContext(), HermesService.HermesService1.class);
+
+            if (null != proxyTask && proxyTask.isRunning()) {
+                View btn_start_proxy = contentView.findViewById(R.id.start_proxy);
+                btn_start_proxy.setEnabled(false);
+            }
+
             AdView adView = (AdView) contentView.findViewById(R.id.adView);
             adView.setAdListener(new AdMobListener());
             AdRequest adRequest = new AdRequest.Builder().build();
@@ -124,10 +154,7 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Ser
                 }
             });
             listView.setVisibility(View.VISIBLE);
-            if (isServiceRunning(contentView.getContext(), ProxyService.class.getName())) {
-                View btn_start_proxy = contentView.findViewById(R.id.start_proxy);
-                btn_start_proxy.setEnabled(false);
-            }
+
             contentView.findViewById(R.id.start_proxy).setOnClickListener(this);
             contentView.findViewById(R.id.stop_proxy).setOnClickListener(this);
             contentView.findViewById(R.id.clearLog).setOnClickListener(this);
@@ -164,6 +191,10 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Ser
 //            context.unbindService(this);
 //            NotificationUtils.clearNotify(context);
 //        }
+        if (contentView != null) {
+            Hermes.disconnect(contentView.getContext().getApplicationContext());
+            Hermes.disconnect(contentView.getContext(), HermesService.HermesService1.class);
+        }
         super.onDestroy();
     }
 
@@ -202,26 +233,6 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Ser
         }
     }
 
-    @Override
-    public void onServiceConnected(ComponentName name, IBinder service) {
-        if (service instanceof ProxyService.ProxyBinder) {
-            ProxyService.ProxyBinder mProxyService = (ProxyService.ProxyBinder) service;
-            mProxyService.getService().setCallback(new ProxyService.CallBack() {
-                @Override
-                public void onDataChange(final ProxyEvent event) {
-                    if (null != handler) {
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                ProxyFragment.this.handlerProxyEvent(event);
-                            }
-                        });
-                    }
-                }
-            });
-        }
-    }
-
     private void handlerProxyEvent(ProxyEvent event) {
         if (null != contentView && contentView.getVisibility() == View.VISIBLE) {
             switch (event.getEventType()) {
@@ -231,16 +242,33 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Ser
                     break;
                 }
                 case DATA_EVENT: {
-                    DataEventObject data = (DataEventObject) event.getData();
-                    totalUpStream += data.getUpStream();
-                    totalDownStream += data.getDownStream();
-                    TextView view = this.contentView.findViewById(R.id.data_textView);
-                    view.setText(String.format(Locale.CHINA, "TotalUpStream: %d \r\nTotalDownStream: %d", totalUpStream, totalDownStream));
+                    Object obj = event.getData();
+                    if (obj instanceof ErrorEventObject) {
+                        ErrorEventObject data = (ErrorEventObject) obj;
+                        Toast.makeText(this.contentView.getContext(), "error, " + data.getThrowable().getMessage(), Toast.LENGTH_LONG).show();
+                    } else if (obj instanceof Map) {
+                        Map map = (Map) obj;
+                        totalUpStream += Float.valueOf(String.valueOf(map.get("upStream")));
+                        totalDownStream += Float.valueOf(String.valueOf(map.get("downStream")));
+                        TextView view = this.contentView.findViewById(R.id.data_textView);
+                        view.setText(String.format(Locale.CHINA, "TotalUpStream: %d \r\nTotalDownStream: %d", totalUpStream, totalDownStream));
+                    }
                     break;
                 }
                 case ERROR_EVENT: {
-                    ErrorEventObject data = (ErrorEventObject) event.getData();
-                    Toast.makeText(this.contentView.getContext(), "error, " + data.getThrowable().getMessage(), Toast.LENGTH_LONG).show();
+                    Object obj = event.getData();
+                    if (obj instanceof ErrorEventObject) {
+                        ErrorEventObject data = (ErrorEventObject) event.getData();
+                        Toast.makeText(this.contentView.getContext(), "error, " + data.getThrowable().getMessage(), Toast.LENGTH_LONG).show();
+                    } else if (obj instanceof Map) {
+                        Map map = (Map) obj;
+                        StringBuilder stringBuilder = new StringBuilder("error: ");
+                        for (Object key : map.keySet()) {
+                            Object value = map.get(key);
+                            stringBuilder.append(value);
+                        }
+                        Toast.makeText(this.contentView.getContext(), stringBuilder.toString(), Toast.LENGTH_LONG).show();
+                    }
                     break;
                 }
                 case SERVER_START_EVENT: {
@@ -258,13 +286,4 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Ser
         }
     }
 
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-
-    }
-
-    @Override
-    public void onBindingDied(ComponentName name) {
-
-    }
 }
