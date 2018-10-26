@@ -56,7 +56,17 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Ser
     private NetworkSimpleAdapter simpleAdapter = null;
     private View contentView;
     private Handler handler;
-    private ProxyService.ProxyBinder mProxyService;
+
+    private static class ProxyHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case PROXY_EVENT:
+                    break;
+            }
+        }
+    }
 
     public static ProxyFragment newInstance() {
         return new ProxyFragment();
@@ -71,12 +81,12 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Ser
     public void onClick(View v) {
         if (v.getId() == R.id.start_proxy) {
             if (!isServiceRunning(v.getContext(), ProxyService.class.getName())) {
-                v.getContext().bindService(new Intent(v.getContext(), ProxyService.class), this, Context.BIND_AUTO_CREATE);
+                v.getContext().startService(new Intent(v.getContext(), ProxyService.class));
                 v.setEnabled(false);
             }
         } else if (v.getId() == R.id.stop_proxy) {
             if (isServiceRunning(v.getContext(), ProxyService.class.getName())) {
-                v.getContext().unbindService(this);
+                v.getContext().stopService(new Intent(v.getContext(), ProxyService.class));
                 NotificationUtils.clearNotify(v.getContext());
             }
             this.contentView.findViewById(R.id.start_proxy).setEnabled(true);
@@ -149,9 +159,11 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Ser
 
     @Override
     public void onDestroy() {
-        if (isServiceRunning(this.contentView.getContext(), ProxyService.class.getName())) {
-            this.contentView.getContext().unbindService(this);
-        }
+//        Context context = this.contentView.getContext();
+//        if (isServiceRunning(context, ProxyService.class.getName())) {
+//            context.unbindService(this);
+//            NotificationUtils.clearNotify(context);
+//        }
         super.onDestroy();
     }
 
@@ -192,20 +204,22 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Ser
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
-        mProxyService = (ProxyService.ProxyBinder) service;
-        mProxyService.getService().setCallback(new ProxyService.CallBack() {
-            @Override
-            public void onDataChange(final ProxyEvent event) {
-                if (null != handler) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            ProxyFragment.this.handlerProxyEvent(event);
-                        }
-                    });
+        if (service instanceof ProxyService.ProxyBinder) {
+            ProxyService.ProxyBinder mProxyService = (ProxyService.ProxyBinder) service;
+            mProxyService.getService().setCallback(new ProxyService.CallBack() {
+                @Override
+                public void onDataChange(final ProxyEvent event) {
+                    if (null != handler) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                ProxyFragment.this.handlerProxyEvent(event);
+                            }
+                        });
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     private void handlerProxyEvent(ProxyEvent event) {
@@ -226,7 +240,7 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Ser
                 }
                 case ERROR_EVENT: {
                     ErrorEventObject data = (ErrorEventObject) event.getData();
-                    Toast.makeText(this.contentView.getContext(), data.getErrorMsg() + ", " + data.getThrowable().getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this.contentView.getContext(), "error, " + data.getThrowable().getMessage(), Toast.LENGTH_LONG).show();
                     break;
                 }
                 case SERVER_START_EVENT: {

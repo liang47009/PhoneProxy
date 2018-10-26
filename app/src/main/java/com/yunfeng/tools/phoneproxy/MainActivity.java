@@ -143,8 +143,9 @@ public class MainActivity extends AppCompatActivity
             Logger.d("no fragment found with tag: " + tag);
         } else {
             FragmentTransaction ft = this.getSupportFragmentManager().beginTransaction();
-            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-            ft.replace(R.id.container, f, tag).commitNow();
+            ft.setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out);
+            ft.replace(R.id.container, f);
+            ft.commit();
         }
     }
 

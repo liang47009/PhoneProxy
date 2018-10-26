@@ -79,7 +79,8 @@
         <service
             android:name="com.yunfeng.tools.phoneproxy.service.ProxyService"
             android:enabled="true"
-            android:exported="false" />
+            android:exported="false"
+            android:process=":ps" />
     </application>
 
 </manifest>

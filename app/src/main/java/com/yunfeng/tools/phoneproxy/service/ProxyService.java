@@ -3,6 +3,7 @@ package com.yunfeng.tools.phoneproxy.service;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.RemoteException;
 
 import com.yunfeng.tools.phoneproxy.R;
 import com.yunfeng.tools.phoneproxy.http.SocketProxy;
@@ -13,6 +14,19 @@ import com.yunfeng.tools.phoneproxy.util.NotificationUtils;
 
 public class ProxyService extends Service {
     private final SocketProxy socketProxy = new SocketProxy();
+
+//    private final IProxyAidlInterface.Stub mBinder = new IProxyAidlInterface.Stub() {
+//
+//        @Override
+//        public void onEvent(IProxyEvent event) throws RemoteException {
+//
+//        }
+//    };
+//
+//    @Override
+//    public IBinder onBind(Intent intent) {
+//        return mBinder;
+//    }
 
     @Override
     public IBinder onBind(Intent intent) {
