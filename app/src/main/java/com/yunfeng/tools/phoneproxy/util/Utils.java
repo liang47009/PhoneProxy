@@ -1,6 +1,7 @@
 package com.yunfeng.tools.phoneproxy.util;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -31,6 +32,30 @@ public class Utils {
     public static final List<Map<String, Object>> listems = new ArrayList<Map<String, Object>>();
 
     private final static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.CHINA);
+
+    /*
+     * 判断服务是否启动,context上下文对象 ，className服务的name
+     */
+    public static boolean isServiceRunning(Context mContext, String className) {
+        boolean isRunning = false;
+        ActivityManager activityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningServiceInfo> serviceList = null;
+        if (activityManager != null) {
+            serviceList = activityManager.getRunningServices(100);
+
+            if (!(serviceList.size() > 0)) {
+                return false;
+            }
+            for (ActivityManager.RunningServiceInfo info : serviceList) {
+                String temp = info.service.getClassName();
+                if (temp.contains(className)) {
+                    isRunning = true;
+                    break;
+                }
+            }
+        }
+        return isRunning;
+    }
 
     public static void internetChange(Context context, Intent intent) {
         if (context instanceof MainActivity) {

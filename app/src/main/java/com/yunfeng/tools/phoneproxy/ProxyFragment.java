@@ -34,6 +34,7 @@ import com.yunfeng.tools.phoneproxy.util.Logger;
 import com.yunfeng.tools.phoneproxy.util.Utils;
 import com.yunfeng.tools.phoneproxy.viewmodel.ProxyViewModel;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -54,11 +55,12 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Her
     private NetworkSimpleAdapter simpleAdapter = null;
     private View contentView;
     private Handler handler;
+    private WeakReference<Context> mContext;
 
     @Override
     public void onHermesConnected(Class<? extends HermesService> service) {
         if (null == proxyTask) {
-            proxyTask = Hermes.newInstanceInService(HermesService.HermesService1.class, IProxyEventTask.class, "8888");
+            proxyTask = Hermes.newInstance(IProxyEventTask.class, "8888");
         }
     }
 
@@ -121,14 +123,20 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Her
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mContext = new WeakReference<>(context.getApplicationContext());
+        if (null != mContext.get()) {
+            Hermes.connect(mContext.get(), HermesService.HermesService0.class);
+        }
+    }
+
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         contentView = inflater.inflate(R.layout.proxy_fragment, container, false);
         if (null != contentView) {
             handler = new Handler();
-
-            Hermes.connect(contentView.getContext().getApplicationContext(), HermesService.HermesService0.class);
-            Hermes.connect(contentView.getContext().getApplicationContext(), HermesService.HermesService1.class);
 
             if (null != proxyTask && proxyTask.isRunning()) {
                 View btn_start_proxy = contentView.findViewById(R.id.start_proxy);
@@ -188,41 +196,17 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Her
     }
 
     @Override
-    public void onDestroy() {
+    public void onDetach() {
 //        Context context = this.contentView.getContext();
 //        if (isServiceRunning(context, ProxyService.class.getName())) {
 //            context.unbindService(this);
 //            NotificationUtils.clearNotify(context);
 //        }
-        if (contentView != null) {
-            Hermes.disconnect(contentView.getContext().getApplicationContext());
-            Hermes.disconnect(contentView.getContext(), HermesService.HermesService1.class);
+        Context context = mContext.get();
+        if (null != context) {
+                Hermes.disconnect(context);
         }
-        super.onDestroy();
-    }
-
-    /*
-     * 判断服务是否启动,context上下文对象 ，className服务的name
-     */
-    public static boolean isServiceRunning(Context mContext, String className) {
-        boolean isRunning = false;
-        ActivityManager activityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.RunningServiceInfo> serviceList = null;
-        if (activityManager != null) {
-            serviceList = activityManager.getRunningServices(100);
-
-            if (!(serviceList.size() > 0)) {
-                return false;
-            }
-            for (ActivityManager.RunningServiceInfo info : serviceList) {
-                String temp = info.service.getClassName();
-                if (temp.contains(className)) {
-                    isRunning = true;
-                    break;
-                }
-            }
-        }
-        return isRunning;
+        super.onDetach();
     }
 
     public void setNetworkInterface(final List<Map<String, Object>> maps) {
