@@ -204,7 +204,7 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Her
 //        }
         Context context = mContext.get();
         if (null != context) {
-                Hermes.disconnect(context);
+            Hermes.disconnect(context);
         }
         super.onDetach();
     }
@@ -221,7 +221,7 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Her
     }
 
     private void handlerProxyEvent(ProxyEvent event) {
-        if (null != contentView && contentView.getVisibility() == View.VISIBLE) {
+        if (null != contentView && contentView.isShown()) {
             switch (event.getEventType()) {
                 case LOG_EVENT: {
                     EditText view = this.contentView.findViewById(R.id.log_editText);
@@ -261,12 +261,16 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Her
                 case SERVER_START_EVENT: {
                     View view = this.contentView.findViewById(R.id.start_proxy);
                     view.setEnabled(false);
+                    EditText et_view = this.contentView.findViewById(R.id.log_editText);
+                    et_view.append("Proxy server is start!\r\n");
                     break;
                 }
                 case SERVER_STOP_EVENT: {
                     Button view = this.contentView.findViewById(R.id.start_proxy);
                     view.setText(R.string.start_proxy);
                     view.setEnabled(true);
+                    EditText et_view = this.contentView.findViewById(R.id.log_editText);
+                    et_view.append("Proxy server is stop!\r\n");
                     break;
                 }
             }
