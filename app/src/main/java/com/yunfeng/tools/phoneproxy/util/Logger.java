@@ -8,14 +8,14 @@ package com.yunfeng.tools.phoneproxy.util;
 public class Logger {
 
     public static void d(Object msg) {
-        android.util.Log.d("PhoneProxy", msg.toString());
+        android.util.Log.d(Const.TAG, msg.toString());
     }
 
     public static void e(Object msg) {
-        android.util.Log.e("PhoneProxy", msg.toString());
+        android.util.Log.e(Const.TAG, msg.toString());
     }
 
     public static void e(Object msg, Throwable cause) {
-        android.util.Log.d("PhoneProxy", msg.toString(), cause);
+        android.util.Log.d(Const.TAG, msg.toString(), cause);
     }
 }

@@ -6,6 +6,7 @@ import com.yunfeng.tools.phoneproxy.listener.DataEventObject;
 import com.yunfeng.tools.phoneproxy.listener.ProxyEvent;
 import com.yunfeng.tools.phoneproxy.listener.ProxyEventListener;
 import com.yunfeng.tools.phoneproxy.util.Const;
+import com.yunfeng.tools.phoneproxy.util.Logger;
 import com.yunfeng.tools.phoneproxy.util.ThreadPool;
 import com.yunfeng.tools.phoneproxy.util.Utils;
 
@@ -45,7 +46,7 @@ public class ProxyTask implements Runnable {
             builder.append("\r\n").append("Request Time: ").append(Utils.formatDate(new Date()));
             InputStream isIn = socketIn.getInputStream();
             OutputStream osIn = socketIn.getOutputStream();  //从客户端流数据中读取头部，获得请求主机和端口
-            Log.e("PP", "-----------------------------------------------------------");
+            Logger.e("-----------------------------------------------------------");
             HttpHeader header = HttpHeader.readHeader(isIn); //添加请求日志信息
             builder.append("\r\n").append("From Host: ").append(socketIn.getInetAddress());
             builder.append("\r\n").append("From Port: ").append(socketIn.getPort());
@@ -55,7 +56,7 @@ public class ProxyTask implements Runnable {
             builder.append("\r\n").append("----------------------------------");
             listener.onEvent(new ProxyEvent(ProxyEvent.EventType.LOG_EVENT, builder.toString()));
             //如果没解析出请求请求地址和端口，则返回错误信息
-            Log.e("PP", "-----------------------------------------------------------");
+            Logger.e("-----------------------------------------------------------");
             if (header.getHost() == null || header.getPort() == null) {
                 osIn.write(Const.SERVERERROR.getBytes());
                 osIn.flush();

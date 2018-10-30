@@ -3,6 +3,7 @@ package com.yunfeng.tools.phoneproxy.http;
 import android.util.Log;
 
 import com.yunfeng.tools.phoneproxy.util.Const;
+import com.yunfeng.tools.phoneproxy.util.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,7 +70,7 @@ public final class HttpHeader {
                 port = hosts.length == 3 ? hosts[2] : "80";//http默认端口为80
             }
         }
-        Log.e("PP", "addHeaderString: " + str);
+        Logger.e("addHeaderString: " + str);
     }
 
     /**
@@ -82,7 +83,7 @@ public final class HttpHeader {
         if (request_method.length > 0) {
             method = request_method[0];
         }
-        Log.e("PP", "addHeaderMethod: " + temp);
+        Logger.e("addHeaderMethod: " + temp);
         return method;
     }
 

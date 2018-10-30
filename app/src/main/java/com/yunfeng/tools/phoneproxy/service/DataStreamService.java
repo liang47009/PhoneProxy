@@ -9,6 +9,8 @@ import android.os.Messenger;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.yunfeng.tools.phoneproxy.util.Logger;
+
 /**
  * socket service
  * Created by xll on 2018/8/8.
@@ -39,20 +41,20 @@ public class DataStreamService extends Service {
 
     @Override
     public void onCreate() {
-        Log.d("app", "sdd onCreate");
+        Logger.d("sdd onCreate");
         super.onCreate();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d("app", "sdd onStartCommand: " + flags + ", " + startId);
+        Logger.d("sdd onStartCommand: " + flags + ", " + startId);
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d("app", "sdd onDestroy");
+        Logger.d("sdd onDestroy");
     }
 
 }

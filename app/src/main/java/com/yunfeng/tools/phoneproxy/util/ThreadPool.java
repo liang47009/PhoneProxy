@@ -145,7 +145,7 @@ public class ThreadPool {
                 try {
                     result = mJob.run(this);
                 } catch (Throwable ex) {
-                    Log.w(TAG, "Exception in running a job", ex);
+                    Logger.e("Exception in running a job", ex);
                 }
             }
 
@@ -189,7 +189,7 @@ public class ThreadPool {
                 try {
                     wait();
                 } catch (Exception ex) {
-                    Log.w(TAG, "ingore exception", ex);
+                    Logger.e("ingore exception", ex);
                     // ignore.
                 }
             }

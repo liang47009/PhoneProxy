@@ -1,9 +1,12 @@
 package com.yunfeng.tools.phoneproxy;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -15,18 +18,26 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
+import android.util.AttributeSet;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.yunfeng.tools.phoneproxy.receiver.InternetChangeBroadcastReceiver;
+import com.yunfeng.tools.phoneproxy.util.Const;
 import com.yunfeng.tools.phoneproxy.util.Logger;
+import com.yunfeng.tools.phoneproxy.util.NativeColor;
 import com.yunfeng.tools.phoneproxy.view.SettingsActivity;
 import com.yunfeng.tools.phoneproxy.view.fragment.ProxyFragment;
 import com.yunfeng.tools.phoneproxy.view.fragment.RemoteManagerFragment;
 import com.yunfeng.tools.phoneproxy.view.fragment.SettingsFragment;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import xiaofei.library.hermes.Hermes;
@@ -36,10 +47,55 @@ public class MainActivity extends AppCompatActivity
 
     private InternetChangeBroadcastReceiver receiver;
     private Map<String, Fragment> fragments = new HashMap<>(4);
+    private String color;
+    private Boolean enableChangeSkin = true;
+
+    private List<String> viewPrefixList = new ArrayList<>(4);
+
+    {
+        viewPrefixList.add("android.view.");
+        viewPrefixList.add("android.widget.");
+        viewPrefixList.add("android.webkit.");
+    }
+
+    @Override
+    public View onCreateView(String name, Context context, AttributeSet attrs) {
+        View view = null;
+        if (enableChangeSkin) {// enable skin change
+            for (String prefix : viewPrefixList) {
+                try {
+                    if (-1 == name.indexOf('.')) {
+                        view = LayoutInflater.from(context).createView(name, prefix, attrs);
+                    } else {
+                        view = LayoutInflater.from(context).createView(name, null, attrs);
+                    }
+                } catch (Exception e) {
+                    Logger.e("onCreateView error: " + e.getMessage());
+                }
+                if (null != view) {
+                    break;
+                }
+            }
+            if (view != null) {
+                String theme = attrs.getAttributeValue("http://schemas.android.com/apk/res-auto", "background");
+                if (TextUtils.isEmpty(theme)) {
+                    Integer id = NativeColor.getNativeColorByName(color);
+                    if (null != id) {
+                        view.setBackgroundColor(getResources().getColor(id));
+                    }
+                } else {
+                    theme = theme.substring(1, theme.length());
+                    view.setBackgroundDrawable(getResources().getDrawable(Integer.valueOf(theme)));
+                }
+            }
+        }
+        return view;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        updateConfig(this);
         setContentView(R.layout.activity_sidebar);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -75,6 +131,12 @@ public class MainActivity extends AppCompatActivity
         fragments.put("SettingsFragment", SettingsFragment.newInstance());
         Hermes.setHermesListener(pf);
         changeFragment("ProxyFragment");
+    }
+
+    private void updateConfig(Context context) {
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        color = preferences.getString("example_skin_list", "white");
+        enableChangeSkin = preferences.getBoolean("change_skin_switch", true);
     }
 
     @Override
