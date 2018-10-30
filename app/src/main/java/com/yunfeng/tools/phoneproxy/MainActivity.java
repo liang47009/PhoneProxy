@@ -20,14 +20,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.yunfeng.tools.phoneproxy.receiver.InternetChangeBroadcastReceiver;
-import com.yunfeng.tools.phoneproxy.util.Const;
 import com.yunfeng.tools.phoneproxy.util.Logger;
 import com.yunfeng.tools.phoneproxy.util.NativeColor;
 import com.yunfeng.tools.phoneproxy.view.SettingsActivity;
@@ -48,7 +46,7 @@ public class MainActivity extends AppCompatActivity
     private InternetChangeBroadcastReceiver receiver;
     private Map<String, Fragment> fragments = new HashMap<>(4);
     private String color;
-    private Boolean enableChangeSkin = true;
+    private Boolean enableChangeSkin = false;
 
     private List<String> viewPrefixList = new ArrayList<>(4);
 
@@ -136,7 +134,7 @@ public class MainActivity extends AppCompatActivity
     private void updateConfig(Context context) {
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         color = preferences.getString("example_skin_list", "white");
-        enableChangeSkin = preferences.getBoolean("change_skin_switch", true);
+        enableChangeSkin = preferences.getBoolean("change_skin_switch", false);
     }
 
     @Override
