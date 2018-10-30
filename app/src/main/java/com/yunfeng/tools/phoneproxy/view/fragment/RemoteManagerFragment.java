@@ -1,4 +1,4 @@
-package com.yunfeng.tools.phoneproxy;
+package com.yunfeng.tools.phoneproxy.view.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -7,6 +7,8 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.yunfeng.tools.phoneproxy.R;
 
 public class RemoteManagerFragment extends Fragment {
 
@@ -24,6 +26,7 @@ public class RemoteManagerFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         // TODO: Use the ViewModel
+
     }
 
 }

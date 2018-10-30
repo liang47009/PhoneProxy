@@ -1,5 +1,6 @@
 package com.yunfeng.tools.phoneproxy;
 
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
@@ -20,6 +21,10 @@ import android.view.View;
 
 import com.yunfeng.tools.phoneproxy.receiver.InternetChangeBroadcastReceiver;
 import com.yunfeng.tools.phoneproxy.util.Logger;
+import com.yunfeng.tools.phoneproxy.view.SettingsActivity;
+import com.yunfeng.tools.phoneproxy.view.fragment.ProxyFragment;
+import com.yunfeng.tools.phoneproxy.view.fragment.RemoteManagerFragment;
+import com.yunfeng.tools.phoneproxy.view.fragment.SettingsFragment;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -67,6 +72,7 @@ public class MainActivity extends AppCompatActivity
         ProxyFragment pf = ProxyFragment.newInstance();
         fragments.put("ProxyFragment", pf);
         fragments.put("RemoteManagerFragment", RemoteManagerFragment.newInstance());
+        fragments.put("SettingsFragment", SettingsFragment.newInstance());
         Hermes.setHermesListener(pf);
         changeFragment("ProxyFragment");
     }
@@ -119,6 +125,7 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
 

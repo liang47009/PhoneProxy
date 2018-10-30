@@ -9,7 +9,7 @@ import android.os.Bundle;
 import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.yunfeng.tools.phoneproxy.MainActivity;
-import com.yunfeng.tools.phoneproxy.ProxyFragment;
+import com.yunfeng.tools.phoneproxy.view.fragment.ProxyFragment;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;

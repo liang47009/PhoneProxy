@@ -25,4 +25,6 @@
     <string name="sidebar_menu_title_netwrok">NetWork</string>
     <string name="channel_name">proxy status</string>
     <string name="channel_description">notification for proxy status</string>
+    <string name="settings_proxy_port">set proxy port, default: 8888</string>
+    <string name="settings_enable_skins">set enable dynamic skins</string>
 </resources>

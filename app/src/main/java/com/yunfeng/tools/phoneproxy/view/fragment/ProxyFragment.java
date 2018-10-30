@@ -1,6 +1,5 @@
-package com.yunfeng.tools.phoneproxy;
+package com.yunfeng.tools.phoneproxy.view.fragment;
 
-import android.app.ActivityManager;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ClipData;
@@ -24,6 +23,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.yunfeng.tools.phoneproxy.R;
 import com.yunfeng.tools.phoneproxy.adapter.NetworkSimpleAdapter;
 import com.yunfeng.tools.phoneproxy.listener.AdMobListener;
 import com.yunfeng.tools.phoneproxy.listener.ErrorEventObject;
