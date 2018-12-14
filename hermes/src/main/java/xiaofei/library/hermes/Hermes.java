@@ -1,19 +1,17 @@
 /**
- *
  * Copyright 2016 Xiaofei
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package xiaofei.library.hermes;
@@ -36,7 +34,6 @@ import xiaofei.library.hermes.wrapper.ObjectWrapper;
 
 /**
  * Created by Xiaofei on March 31, 2016.
- *
  */
 public class Hermes {
 
@@ -62,8 +59,9 @@ public class Hermes {
 
     /**
      * There is no need to register class in local process!
-     *
+     * <p>
      * But if the returned type of a method is not exactly the same with the return type of the method, it should be registered.
+     *
      * @param clazz
      */
     public static void register(Class<?> clazz) {
@@ -92,8 +90,8 @@ public class Hermes {
 
     private static <T> T getProxy(Class<? extends HermesService> service, ObjectWrapper object) {
         Class<?> clazz = object.getObjectClass();
-        T proxy =  (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class<?>[]{clazz},
-                    new HermesInvocationHandler(service, object));
+        T proxy = (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class<?>[]{clazz},
+                new HermesInvocationHandler(service, object));
         HERMES_GC.register(service, proxy, object.getTimeStamp());
         return proxy;
     }
@@ -191,6 +189,12 @@ public class Hermes {
         connectApp(context, null, HermesService.HermesService0.class);
     }
 
+    public static void connect(Class<? extends HermesService> service) {
+        // TODO callbacks should be handled as an exception.
+        // It seems that callbacks may not be registered.
+        connectApp(getContext(), null, service);
+    }
+
     public static void connect(Context context, Class<? extends HermesService> service) {
         // TODO callbacks should be handled as an exception.
         // It seems that callbacks may not be registered.
@@ -208,6 +212,10 @@ public class Hermes {
 
     public static void disconnect(Context context) {
         disconnect(context, HermesService.HermesService0.class);
+    }
+
+    public static void disconnect() {
+        disconnect(getContext(), HermesService.HermesService0.class);
     }
 
     public static void disconnect(Context context, Class<? extends HermesService> service) {

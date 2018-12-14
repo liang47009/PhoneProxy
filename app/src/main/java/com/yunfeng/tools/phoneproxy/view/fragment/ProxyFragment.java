@@ -36,7 +36,6 @@ import com.yunfeng.tools.phoneproxy.util.Logger;
 import com.yunfeng.tools.phoneproxy.util.Utils;
 import com.yunfeng.tools.phoneproxy.viewmodel.ProxyViewModel;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -57,18 +56,14 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Her
     private NetworkSimpleAdapter simpleAdapter = null;
     private View contentView;
     private Handler handler;
-    private WeakReference<Context> mContext;
 
     @Override
     public void onHermesConnected(Class<? extends HermesService> service) {
         if (null == proxyTask) {
-            Context context = mContext.get();
-            if (null != context) {
-                final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-                String bufferSize = preferences.getString("default_buffer_size", "1");
-                String port = preferences.getString("default_porxy_port", "8888");
-                proxyTask = Hermes.newInstance(IProxyEventTask.class, port);
-            }
+            final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
+            String bufferSize = preferences.getString("default_buffer_size", "1");
+            String port = preferences.getString("default_porxy_port", "8888");
+            proxyTask = Hermes.newInstance(IProxyEventTask.class, port);
         }
     }
 
@@ -93,7 +88,6 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Her
     public static ProxyFragment newInstance() {
         return pf;
     }
-
 
     class ProxyEventList implements ProxyEventListener {
         @Override
@@ -127,15 +121,6 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Her
         } else if (v.getId() == R.id.clearLog) {
             EditText logEditTextView = (EditText) contentView.findViewById(R.id.log_editText);
             logEditTextView.setText("");
-        }
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        mContext = new WeakReference<>(context.getApplicationContext());
-        if (null != mContext.get()) {
-            Hermes.connect(mContext.get(), HermesService.HermesService0.class);
         }
     }
 
@@ -204,16 +189,14 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Her
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        Hermes.connect(HermesService.HermesService0.class);
+    }
+
+    @Override
     public void onDetach() {
-//        Context context = this.contentView.getContext();
-//        if (isServiceRunning(context, ProxyService.class.getName())) {
-//            context.unbindService(this);
-//            NotificationUtils.clearNotify(context);
-//        }
-        Context context = mContext.get();
-        if (null != context) {
-            Hermes.disconnect(context);
-        }
+        Hermes.disconnect();
         super.onDetach();
     }
 
