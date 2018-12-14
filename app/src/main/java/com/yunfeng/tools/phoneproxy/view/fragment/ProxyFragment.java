@@ -36,6 +36,7 @@ import com.yunfeng.tools.phoneproxy.util.Logger;
 import com.yunfeng.tools.phoneproxy.util.Utils;
 import com.yunfeng.tools.phoneproxy.viewmodel.ProxyViewModel;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -44,6 +45,8 @@ import java.util.Map;
 import xiaofei.library.hermes.Hermes;
 import xiaofei.library.hermes.HermesListener;
 import xiaofei.library.hermes.HermesService;
+
+import static com.yunfeng.tools.phoneproxy.util.Utils.INTERNET_CHANGED;
 
 public class ProxyFragment extends Fragment implements View.OnClickListener, HermesListener {
     private static final int PROXY_EVENT = 1001;
@@ -55,7 +58,7 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Her
     private ProxyViewModel mViewModel;
     private NetworkSimpleAdapter simpleAdapter = null;
     private View contentView;
-    private Handler handler;
+    public static ProxyHandler handler;
 
     @Override
     public void onHermesConnected(Class<? extends HermesService> service) {
@@ -72,15 +75,36 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Her
 
     }
 
-    private static class ProxyHandler extends Handler {
+    public static class ProxyHandler extends Handler {
+
+        private WeakReference<ProxyFragment> mProxyFragment;
+
+        ProxyHandler(ProxyFragment proxyFragment) {
+            mProxyFragment = new WeakReference<>(proxyFragment);
+        }
+
+        void setProxyFragment(ProxyFragment proxyFragment) {
+            mProxyFragment = new WeakReference<>(proxyFragment);
+        }
+
+        ProxyFragment getProxyFragment() {
+            return mProxyFragment.get();
+        }
+
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
                 case PROXY_EVENT:
                     break;
+                case INTERNET_CHANGED:
+                    if (mProxyFragment.get() != null) {
+                        Utils.updateViewModel(mProxyFragment.get());
+                    }
+                    break;
             }
         }
+
     }
 
     private static final ProxyFragment pf = new ProxyFragment();
@@ -129,7 +153,12 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Her
                              @Nullable Bundle savedInstanceState) {
         contentView = inflater.inflate(R.layout.proxy_fragment, container, false);
         if (null != contentView) {
-            handler = new Handler();
+            if (null == handler) {
+                handler = new ProxyHandler(this);
+            }
+            if (handler.getProxyFragment() == null) {
+                handler.setProxyFragment(this);
+            }
 
             if (null != proxyTask && proxyTask.isRunning()) {
                 View btn_start_proxy = contentView.findViewById(R.id.start_proxy);
@@ -162,11 +191,9 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Her
             contentView.findViewById(R.id.start_proxy).setOnClickListener(this);
             contentView.findViewById(R.id.stop_proxy).setOnClickListener(this);
             contentView.findViewById(R.id.clearLog).setOnClickListener(this);
-            if (mViewModel == null) {
-                mViewModel = ViewModelProviders.of(this).get(ProxyViewModel.class);
-            }
+            mViewModel = ViewModelProviders.of(this).get(ProxyViewModel.class);
             if (!mViewModel.getListItems().hasObservers()) {
-                mViewModel.getListItems().observe(this, new Observer<List<Map<String, Object>>>() {
+                mViewModel.getListItems().observeForever(new Observer<List<Map<String, Object>>>() {
                     @Override
                     public void onChanged(@Nullable List<Map<String, Object>> maps) {
                         listems.clear();
@@ -198,6 +225,11 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Her
     public void onDetach() {
         Hermes.disconnect();
         super.onDetach();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
     }
 
     public void setNetworkInterface(final List<Map<String, Object>> maps) {

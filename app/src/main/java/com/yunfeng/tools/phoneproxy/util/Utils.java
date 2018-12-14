@@ -95,10 +95,13 @@ public class Utils {
         return isRunning;
     }
 
+    public static final int INTERNET_CHANGED = 0x11;
+
     public static void internetChange(Context context, Intent intent) {
         if (context instanceof MainActivity) {
             Logger.d("internetChanged!");
         }
+        ProxyFragment.handler.sendEmptyMessage(INTERNET_CHANGED);
     }
 
     private static boolean checkDataExsit(Object key, Object value) {
