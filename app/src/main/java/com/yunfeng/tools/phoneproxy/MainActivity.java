@@ -6,6 +6,8 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -26,6 +28,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.yunfeng.tools.phoneproxy.receiver.InternetChangeBroadcastReceiver;
+import com.yunfeng.tools.phoneproxy.util.GenericHandler;
 import com.yunfeng.tools.phoneproxy.util.Logger;
 import com.yunfeng.tools.phoneproxy.util.NativeColor;
 import com.yunfeng.tools.phoneproxy.view.SettingsActivity;
@@ -33,6 +36,7 @@ import com.yunfeng.tools.phoneproxy.view.fragment.ProxyFragment;
 import com.yunfeng.tools.phoneproxy.view.fragment.RemoteManagerFragment;
 import com.yunfeng.tools.phoneproxy.view.fragment.SettingsFragment;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,8 +45,9 @@ import java.util.Map;
 import xiaofei.library.hermes.Hermes;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, GenericHandler.MessageCallback {
 
+    public static final int MSG_INVALIDATION = 0x11;
     private InternetChangeBroadcastReceiver receiver;
     private Map<String, Fragment> fragments = new HashMap<>(4);
     private String color;
@@ -54,6 +59,12 @@ public class MainActivity extends AppCompatActivity
         viewPrefixList.add("android.view.");
         viewPrefixList.add("android.widget.");
         viewPrefixList.add("android.webkit.");
+    }
+
+    private static GenericHandler handler = new GenericHandler();
+
+    public static Handler getHandler() {
+        return handler;
     }
 
     @Override
@@ -97,7 +108,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_sidebar);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        handler.setWeakReference(new WeakReference<GenericHandler.MessageCallback>(this));
         this.getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
             @Override
             public void onBackStackChanged() {
@@ -219,4 +230,12 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    public void handleMessage(Message msg) {
+        switch (msg.what) {
+            case MSG_INVALIDATION:
+                this.recreate();
+                break;
+        }
+    }
 }

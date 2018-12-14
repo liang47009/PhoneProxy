@@ -82,7 +82,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 Logger.e("unhandled preference: " + preference);
             }
 
-//            BackupMainActivity.getHandler().sendEmptyMessage(BackupMainActivity.MSG_INVALIDATION);
+            MainActivity.getHandler().sendEmptyMessage(MainActivity.MSG_INVALIDATION);
             preference.setSummary(stringValue);
             return true;
         }

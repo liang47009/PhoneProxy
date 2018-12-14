@@ -282,8 +282,9 @@ public class ProxyFragment extends Fragment implements View.OnClickListener, Her
                     break;
                 }
                 case SERVER_START_EVENT: {
-                    View view = this.contentView.findViewById(R.id.start_proxy);
+                    Button view = this.contentView.findViewById(R.id.start_proxy);
                     view.setEnabled(false);
+                    view.setText("Default Port: 8888");
                     EditText et_view = this.contentView.findViewById(R.id.log_editText);
                     et_view.append("Proxy server is start!\r\n");
                     break;
