@@ -1,7 +1,5 @@
 package com.yunfeng.tools.phoneproxy.http;
 
-import android.util.Log;
-
 import com.yunfeng.tools.phoneproxy.listener.DataEventObject;
 import com.yunfeng.tools.phoneproxy.listener.ProxyEvent;
 import com.yunfeng.tools.phoneproxy.listener.ProxyEventListener;
