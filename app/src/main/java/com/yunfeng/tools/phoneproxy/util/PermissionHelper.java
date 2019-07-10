@@ -31,7 +31,7 @@ import androidx.core.content.ContextCompat;
  * Helper to ask  permission.
  */
 public class PermissionHelper {
-    private static final String[] PERMISSIONS = {Manifest.permission.INTERNET};
+    private static final String[] PERMISSIONS = {Manifest.permission.INTERNET, Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private static final int REQ_PERMISSION_CODE = 0x1001;
 
     /**

@@ -1,10 +1,14 @@
 package com.yunfeng.tools.phoneproxy;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -17,9 +21,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
@@ -34,6 +40,8 @@ import com.yunfeng.tools.phoneproxy.receiver.InternetChangeBroadcastReceiver;
 import com.yunfeng.tools.phoneproxy.util.GenericHandler;
 import com.yunfeng.tools.phoneproxy.util.Logger;
 import com.yunfeng.tools.phoneproxy.util.NativeColor;
+import com.yunfeng.tools.phoneproxy.util.PermissionHelper;
+import com.yunfeng.tools.phoneproxy.util.PermissionRequest;
 import com.yunfeng.tools.phoneproxy.view.SettingsActivity;
 import com.yunfeng.tools.phoneproxy.view.fragment.FileSelectFragment;
 import com.yunfeng.tools.phoneproxy.view.fragment.ProxyFragment;
@@ -74,6 +82,8 @@ public class MainActivity extends AppCompatActivity
         return handler;
     }
 
+    private static final String[] permissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
     @Override
     public View onCreateView(String name, Context context, AttributeSet attrs) {
         View view = null;
@@ -113,6 +123,37 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         updateConfig(this);
         setContentView(R.layout.activity_sidebar);
+//        PermissionHelper.request(this);
+        permissionRequest = new PermissionRequest(this);
+        permissionCheck();
+    }
+
+    private void permissionCheck() {
+        for (String per : permissions) {
+            permissionRequest.startRequest(per, new PermissionRequest.Callback() {
+                @Override
+                public void onCallback(boolean result) {
+                    if (!result) {
+                        permissionCheck();
+                    } else {
+                        init();
+                    }
+                }
+            });
+        }
+    }
+
+    private PermissionRequest permissionRequest;
+
+    @TargetApi(23)
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        PermissionHelper.onRequestPermissionsResult(this, requestCode, permissions, grantResults);
+        permissionRequest.onResponse(requestCode, permissions, grantResults);
+    }
+
+    private void init() {
         MobileAds.initialize(this, "ca-app-pub-9683268735381992~5860363867");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -148,7 +189,7 @@ public class MainActivity extends AppCompatActivity
         fragments.put(SETTINGS_FRAGMENT, SettingsFragment.newInstance());
         Hermes.setHermesListener(pf);
         changeFragment(PROXY_FRAGMENT);
-        
+
         showDialogInDifferentScreen();
     }
 

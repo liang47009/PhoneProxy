@@ -101,7 +101,9 @@ public class Utils {
         if (context instanceof MainActivity) {
             Logger.d("internetChanged!");
         }
-        ProxyFragment.handler.sendEmptyMessage(INTERNET_CHANGED);
+        if (ProxyFragment.handler != null) {
+            ProxyFragment.handler.sendEmptyMessage(INTERNET_CHANGED);
+        }
     }
 
     private static boolean checkDataExsit(Object key, Object value) {

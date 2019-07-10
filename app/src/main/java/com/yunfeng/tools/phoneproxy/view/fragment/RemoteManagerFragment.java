@@ -58,7 +58,6 @@ public class RemoteManagerFragment extends Fragment {
                     login(username, password, ip, port);
                 }
             });
-
             Button btnChooseFile = view.findViewById(R.id.ftp_btn_choose);
             btnChooseFile.setOnClickListener(new View.OnClickListener() {
                 @Override
