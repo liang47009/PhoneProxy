@@ -1,7 +1,8 @@
 package com.yunfeng.tools.phoneproxy;
 
 import android.app.Application;
-import android.support.multidex.MultiDex;
+
+import androidx.multidex.MultiDex;
 
 import com.yunfeng.tools.phoneproxy.http.SocketProxy;
 

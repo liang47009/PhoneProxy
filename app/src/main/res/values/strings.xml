@@ -27,4 +27,10 @@
     <string name="channel_description">notification for proxy status</string>
     <string name="settings_proxy_port">set proxy port, default: 8888</string>
     <string name="settings_enable_skins">set enable dynamic skins</string>
+    <string name="ftp_btn_login">登录</string>
+    <string name="ftp_tv_password">密码</string>
+    <string name="ftp_tv_username">账号</string>
+    <string name="ftp_tv_ip">ip地址</string>
+    <string name="ftp_tv_port">端口</string>
+    <string name="ftp_btn_choose">选择文件</string>
 </resources>

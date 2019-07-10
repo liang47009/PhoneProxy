@@ -9,29 +9,33 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.yunfeng.tools.phoneproxy.receiver.InternetChangeBroadcastReceiver;
 import com.yunfeng.tools.phoneproxy.util.GenericHandler;
 import com.yunfeng.tools.phoneproxy.util.Logger;
 import com.yunfeng.tools.phoneproxy.util.NativeColor;
 import com.yunfeng.tools.phoneproxy.view.SettingsActivity;
+import com.yunfeng.tools.phoneproxy.view.fragment.FileSelectFragment;
 import com.yunfeng.tools.phoneproxy.view.fragment.ProxyFragment;
 import com.yunfeng.tools.phoneproxy.view.fragment.RemoteManagerFragment;
 import com.yunfeng.tools.phoneproxy.view.fragment.SettingsFragment;
@@ -48,6 +52,9 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GenericHandler.MessageCallback {
 
     public static final int MSG_INVALIDATION = 0x11;
+    public static final String PROXY_FRAGMENT = "ProxyFragment";
+    public static final String REMOTE_MANAGER_FRAGMENT = "RemoteManagerFragment";
+    public static final String SETTINGS_FRAGMENT = "SettingsFragment";
     private InternetChangeBroadcastReceiver receiver;
     private Map<String, Fragment> fragments = new HashMap<>(4);
     private String color;
@@ -94,7 +101,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 } else {
                     theme = theme.substring(1, theme.length());
-                    view.setBackgroundDrawable(getResources().getDrawable(Integer.valueOf(theme)));
+                    view.setBackground(getResources().getDrawable(Integer.valueOf(theme)));
                 }
             }
         }
@@ -106,6 +113,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         updateConfig(this);
         setContentView(R.layout.activity_sidebar);
+        MobileAds.initialize(this, "ca-app-pub-9683268735381992~5860363867");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         handler.setWeakReference(new WeakReference<GenericHandler.MessageCallback>(this));
@@ -115,7 +123,7 @@ public class MainActivity extends AppCompatActivity
                 Logger.d("fragment back stack changed!");
             }
         });
-
+//        com.google.android.gms.measurement.AppMeasurementService
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -135,17 +143,41 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         ProxyFragment pf = ProxyFragment.newInstance();
-        fragments.put("ProxyFragment", pf);
-        fragments.put("RemoteManagerFragment", RemoteManagerFragment.newInstance());
-        fragments.put("SettingsFragment", SettingsFragment.newInstance());
+        fragments.put(PROXY_FRAGMENT, pf);
+        fragments.put(REMOTE_MANAGER_FRAGMENT, RemoteManagerFragment.newInstance());
+        fragments.put(SETTINGS_FRAGMENT, SettingsFragment.newInstance());
         Hermes.setHermesListener(pf);
-        changeFragment("ProxyFragment");
+        changeFragment(PROXY_FRAGMENT);
+        
+        showDialogInDifferentScreen();
     }
 
     private void updateConfig(Context context) {
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         color = preferences.getString("example_skin_list", "white");
         enableChangeSkin = preferences.getBoolean("change_skin_switch", false);
+    }
+
+    public void showDialogInDifferentScreen() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FileSelectFragment newFragment = new FileSelectFragment();
+//        boolean mIsLargeLayout = getResources().getBoolean(R.bool.large_layout);
+        boolean mIsLargeLayout = true;
+        Log.e("TAG", mIsLargeLayout + "");
+        if (mIsLargeLayout) {
+            // The device is using a large layout, so show the fragment as a
+            // dialog
+            newFragment.show(fragmentManager, "dialog");
+        } else {
+            // The device is smaller, so show the fragment fullscreen
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            // For a little polish, specify a transition animation
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            // To make it fullscreen, use the 'content' root view as the
+            // container
+            // for the fragment, which is always the root view for the activity
+            transaction.replace(R.id.container, newFragment).commit();
+        }
     }
 
     @Override
@@ -208,9 +240,9 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
         if (id == R.id.nav_proxy) {
-            changeFragment("ProxyFragment");
+            changeFragment(PROXY_FRAGMENT);
         } else if (id == R.id.nav_remote_manager) {
-            changeFragment("RemoteManagerFragment");
+            changeFragment(REMOTE_MANAGER_FRAGMENT);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

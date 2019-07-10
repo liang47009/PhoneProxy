@@ -12,7 +12,8 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
-import android.support.v4.app.NotificationCompat;
+
+import androidx.core.app.NotificationCompat;
 
 import com.yunfeng.tools.phoneproxy.MainActivity;
 import com.yunfeng.tools.phoneproxy.R;

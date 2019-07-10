@@ -27,9 +27,10 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Process;
 import android.os.RemoteException;
-import android.support.v4.util.Pair;
 import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.core.util.Pair;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

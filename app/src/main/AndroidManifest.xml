@@ -68,6 +68,11 @@
             android:name="xiaofei.library.hermes.HermesService$HermesService0"
             android:process=":g" />
 
+        <!-- Sample AdMob App ID: ca-app-pub-3940256099942544~3347511713 -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-9683268735381992~5860363867"/>
+
     </application>
 
 </manifest>

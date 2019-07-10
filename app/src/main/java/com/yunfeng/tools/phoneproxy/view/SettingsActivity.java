@@ -17,14 +17,13 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.preference.SwitchPreference;
-import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.MenuItem;
+
+import androidx.appcompat.app.ActionBar;
 
 import com.yunfeng.tools.phoneproxy.MainActivity;
 import com.yunfeng.tools.phoneproxy.R;
-import com.yunfeng.tools.phoneproxy.util.Const;
 import com.yunfeng.tools.phoneproxy.util.Logger;
 
 import java.util.List;
@@ -139,7 +138,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     }
 
     /**
-     * Set up the {@link android.app.ActionBar}, if the API is available.
+     * Set up the {@link  ActionBar}, if the API is available.
      */
     private void setupActionBar() {
         ActionBar actionBar = getSupportActionBar();

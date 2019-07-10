@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.yunfeng.tools.phoneproxy.util.Logger;
@@ -33,7 +32,6 @@ public class DataStreamService extends Service {
         }
     }
 
-    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return message.getBinder();
