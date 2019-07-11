@@ -7,4 +7,5 @@
     <color name="blue">#0000FF</color>
     <color name="green">#00FF00</color>
     <color name="cyan">#ff00ffff</color>
+    <color name="colorPrimaryText">#ff212121</color>
 </resources>

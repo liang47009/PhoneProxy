@@ -4,7 +4,9 @@ import android.util.Log;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPListParseEngine;
 import org.apache.commons.net.ftp.FTPReply;
 
 import java.io.File;
@@ -13,12 +15,36 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.List;
+
+class Constant {
+    public static final int FTP_CONNECT_SUCCESS = 1;
+    public static final int FTP_FILE_NOTEXISTS = 2;
+    public static final int LOCAL_FILE_AIREADY_COMPLETE = 3;
+    public static final int FTP_DOWN_CONTINUE = 4;
+    public static final int FTP_DOWN_LOADING = 5;
+    public static final int FTP_DOWN_SUCCESS = 6;
+    public static final int FTP_DOWN_SIZEOUT = 7;
+    public static final int FTP_DOWN_FAIL = 8;
+    public static final int FTP_DISCONNECT_SUCCESS = 9;
+    public static final int FTP_DELETEFILE_SUCCESS = 10;
+    public static final int FTP_DELETEFILE_FAIL = 11;
+}
+
+interface FtpDeleteFileListener {
+    void onFtpDelete(int code);
+}
+
+interface FtpProgressListener {
+    void onFtpProgress(int code, long pregress, File file);
+}
 
 public class FTPClientFunctions {
 
     private static final String TAG = "FTPClientFunctions";
 
-    private FTPClient ftpClient = new FTPClient(); // FTP客户端
+    private FTPClient ftpClient = null; // FTP客户端
 
     /**
      * 连接到FTP服务器
@@ -31,7 +57,14 @@ public class FTPClientFunctions {
      */
     public boolean ftpConnect(String host, String username, String password, int port) {
         try {
-//            ftpClient = new FTPClient();
+            ftpClient = new FTPClient();
+            ftpClient.setControlEncoding("UTF-8");
+            FTPClientConfig conf = new FTPClientConfig(FTPClientConfig.SYST_NT);
+            conf.setServerLanguageCode("zh");
+            conf.setDefaultDateFormatStr("d MMM yyyy");
+            conf.setRecentDateFormatStr("d MMM HH:mm");
+            conf.setServerTimeZoneId("Asia/Chinese");
+//            ftpClient.configure(conf);
             Log.d(TAG, "connecting to the ftp server " + host + " ：" + port);
             ftpClient.connect(host, port);
             // 根据返回的状态码，判断链接是否建立成功
@@ -60,15 +93,12 @@ public class FTPClientFunctions {
      * @return 断开结果
      */
     public boolean ftpDisconnect() {
-        // 判断空指针
-        if (ftpClient == null) {
-            return true;
-        }
-
         // 断开ftp服务器连接
         try {
-            ftpClient.logout();
-            ftpClient.disconnect();
+            if (ftpClient != null && ftpClient.isConnected()) {
+                ftpClient.logout();
+                ftpClient.disconnect();
+            }
             return true;
         } catch (Exception e) {
             Log.d(TAG, "Error occurred while disconnecting from ftp server.");
@@ -92,8 +122,7 @@ public class FTPClientFunctions {
             srcFileStream.close();
             return status;
         } catch (Exception e) {
-            e.printStackTrace();
-            Log.d(TAG, "upload failed: " + e.getLocalizedMessage());
+            Log.e(TAG, "upload failed: ", e);
         }
         return status;
     }
@@ -138,10 +167,10 @@ public class FTPClientFunctions {
         boolean result = false;
         try {
             File file = new File(filePathName);
-            String dataDirectory = file.getName().substring(0, 8);
+            String dataDirectory = file.getParent();
             if (file.exists()) {
                 FileInputStream fileInputStream = new FileInputStream(file);
-//                uploadDirectoryFile(fileInputStream, dataDirectory, file.getName());
+                uploadDirectoryFile(fileInputStream, dataDirectory, file.getName());
                 result = true;  //上传成功
             } else {
                 Log.i(TAG, "ftpUploadFile: 文件路径不存在");
@@ -152,33 +181,38 @@ public class FTPClientFunctions {
         return result;
     }
 
-//    /**
-//     * 上传文件夹
-//     * 文件流 上传后指定根目录 文件名称
-//     *
-//     * @param srcFileStream 文件流
-//     * @param directoryName ftp存储的文件夹名称
-//     * @param name          ftp存储的文件名称
-//     * @throws Exception error
-//     */
-//    public void uploadDirectoryFile(InputStream srcFileStream, String directoryName, String name) throws Exception {
-//        try {
-//            ftpClient.setFileType(org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE);
-//            //判断当前FTP工作目录
-//            String pwd = ftpClient.printWorkingDirectory();
-//            if (pwd != null) {
-//                if (!("/" + Constant.ftpDirectoryFile).equals(pwd)) {
-//                    getDirectoryExist(Constant.ftpDirectoryFile);
-//                }
-//            }
-//            getDirectoryExist(directoryName);
-//            ftpClient.storeFile(name, srcFileStream);
-//            changeToParentDirectory();
-//            srcFileStream.close();
-//        } catch (Exception e) {
-//            throw e;
-//        }
-//    }
+
+    /**
+     * 上传文件夹
+     * 文件流 上传后指定根目录 文件名称
+     *
+     * @param srcFileStream 文件流
+     * @param directoryName ftp存储的文件夹名称
+     * @param name          ftp存储的文件名称
+     */
+    public void uploadDirectoryFile(InputStream srcFileStream, String directoryName, String name) throws Exception {
+        try {
+            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+            //判断当前FTP工作目录
+            String pwd = ftpClient.printWorkingDirectory();
+            //getDirectoryExist(directoryName);
+            ftpClient.storeFile(name, srcFileStream);
+            //changeToParentDirectory();
+            srcFileStream.close();
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    public String getCurrentWorkDirectory() {
+        String pwd = null;
+        try {
+            pwd = ftpClient.printWorkingDirectory();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return pwd;
+    }
 
     /**
      * 下载单个文件，可实现断点下载.
@@ -301,10 +335,57 @@ public class FTPClientFunctions {
         try {
             status = ftpClient.changeWorkingDirectory(path);
         } catch (Exception e) {
-            e.printStackTrace();
-            Log.d(TAG, "change directory failed: " + e.getLocalizedMessage());
+            Log.e(TAG, "change directory failed: ", e);
         }
         return status;
+    }
+
+    public boolean ftpReturnParent() {
+        boolean status = false;
+        try {
+            status = ftpClient.changeToParentDirectory();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return status;
+    }
+
+    public List<FTPFile> ftpListCurrentFiles() {
+        List<FTPFile> tmpResults = new LinkedList<FTPFile>();
+        try {
+            FTPFile[] files = ftpClient.listFiles();
+            for (FTPFile file : files) {
+                if (null == file) {
+                    continue;
+                }
+                tmpResults.add(file);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return tmpResults;
+    }
+
+    public List<FTPFile> ftpGetCurrentDirFiles(String path, int pageSize) {
+        List<FTPFile> tmpResults = new LinkedList<FTPFile>();
+        try {
+            FTPListParseEngine engine = ftpClient.initiateListParsing(path);
+            while (engine.hasNext()) {
+                FTPFile[] files = engine.getNext(pageSize);
+                for (FTPFile file : files) {
+                    if (null == file) {
+                        continue;
+                    }
+                    tmpResults.add(file);
+                }
+                // "page size" you want
+                //do whatever you want with these files, display them, etc.
+                //expensive FTPFile objects not created until needed.
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return tmpResults;
     }
 
     public boolean connect(String ip, int port, String userName, String pass) {
@@ -340,4 +421,5 @@ public class FTPClientFunctions {
             e.printStackTrace();
         }
     }
+
 }

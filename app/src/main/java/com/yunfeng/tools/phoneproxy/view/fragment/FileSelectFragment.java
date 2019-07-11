@@ -17,11 +17,22 @@ import com.yunfeng.tools.phoneproxy.view.widget.FileDialogView;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 
+interface OnSelectedFilesListener {
+    void selectedFiles(Collection<File> files);
+}
+
 public class FileSelectFragment extends DialogFragment {
+
+    private OnSelectedFilesListener mListener;
+
+    public void setListener(OnSelectedFilesListener listener) {
+        this.mListener = listener;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -45,15 +56,18 @@ public class FileSelectFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                 ArrayList<File> files = pickerView.getSelectedFiles();
-                if (files != null && files.size() > 0) {
-                    File file = files.get(0);
-                    Intent intent = new Intent();
-                    Uri uri = Uri.fromFile(file);
-                    intent.setData(uri);
-                    if (FileSelectFragment.this.getActivity() != null) {
-                        FileSelectFragment.this.getActivity().setResult(RESULT_OK, intent);
-                    }
+                if (mListener != null) {
+                    mListener.selectedFiles(files);
                 }
+//                if (files != null && files.size() > 0) {
+//                    File file = files.get(0);
+//                    Intent intent = new Intent();
+//                    Uri uri = Uri.fromFile(file);
+//                    intent.setData(uri);
+//                    if (FileSelectFragment.this.getActivity() != null) {
+//                        FileSelectFragment.this.getActivity().setResult(RESULT_OK, intent);
+//                    }
+//                }
                 FileSelectFragment.this.dismiss();
             }
         });

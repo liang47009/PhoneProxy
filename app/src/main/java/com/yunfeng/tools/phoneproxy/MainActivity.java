@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity
         fragments.put(REMOTE_MANAGER_FRAGMENT, RemoteManagerFragment.newInstance());
         fragments.put(SETTINGS_FRAGMENT, SettingsFragment.newInstance());
         Hermes.setHermesListener(pf);
-        changeFragment(PROXY_FRAGMENT);
+        changeFragment(REMOTE_MANAGER_FRAGMENT);
 //        showDialogInDifferentScreen();
     }
 

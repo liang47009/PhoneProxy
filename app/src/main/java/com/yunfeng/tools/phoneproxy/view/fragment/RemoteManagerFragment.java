@@ -12,13 +12,15 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import android.text.Editable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,11 +31,32 @@ import com.yunfeng.tools.phoneproxy.R;
 import com.yunfeng.tools.phoneproxy.ftp.FTPClientFunctions;
 import com.yunfeng.tools.phoneproxy.util.ThreadPool;
 
-import java.io.File;
+import org.apache.commons.net.ftp.FTPFile;
 
-public class RemoteManagerFragment extends Fragment {
+import java.io.File;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+
+interface OnFtpOprationListener {
+    void onConnected();
+
+    void onLoginSucces();
+
+    void onChangedDir(List<FTPFile> list);
+}
+
+public class RemoteManagerFragment extends Fragment implements OnSelectedFilesListener, OnFtpOprationListener {
 
     private static final String TAG = "RemoteManagerFragment";
+    private View layoutFtpLoginPanel;
+    private View layoutServerDirPanel;
+    private ListView listCurDir;
+    private ListView listSelFile;
+    private LinkedList<File> selectedFiles = new LinkedList<>();
+
+    private ArrayAdapter<String> mCurDirAdapter;
+    private ArrayAdapter<String> mSelFilesAdapter;
 
     public static RemoteManagerFragment newInstance() {
         return new RemoteManagerFragment();
@@ -48,8 +71,41 @@ public class RemoteManagerFragment extends Fragment {
             final EditText password_et = view.findViewById(R.id.ftp_et_password);
             final EditText username_ip = view.findViewById(R.id.ftp_et_ip);
             final EditText password_port = view.findViewById(R.id.ftp_et_port);
-            Button button = view.findViewById(R.id.ftp_btn_login);
-            button.setOnClickListener(new View.OnClickListener() {
+            final Button btnFtpLogin = view.findViewById(R.id.ftp_btn_login);
+            final Button btnFtpUpload = view.findViewById(R.id.ftp_btn_upload);
+            final Button btnFtpDisConnect = view.findViewById(R.id.ftp_btn_disconnect);
+            final Button btnFtpReturn = view.findViewById(R.id.ftp_btn_return);
+
+            layoutFtpLoginPanel = view.findViewById(R.id.ftp_login_panel);
+            layoutServerDirPanel = view.findViewById(R.id.server_dir_panel);
+
+            listCurDir = view.findViewById(R.id.current_dir_list);
+            mCurDirAdapter = new ArrayAdapter<>(view.getContext(), R.layout.simple_list_item_1);
+            listCurDir.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    String itemData = parent.getAdapter().getItem(position).toString();
+                    RemoteManagerFragment.this.changeDirectory(itemData);
+                }
+            });
+            listCurDir.setAdapter(mCurDirAdapter);
+
+            listSelFile = view.findViewById(R.id.selected_files_list);
+            listSelFile.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                }
+            });
+            mSelFilesAdapter = new ArrayAdapter<>(view.getContext(), R.layout.simple_list_item_1);
+            listSelFile.setAdapter(mSelFilesAdapter);
+            btnFtpReturn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    returnParent();
+                }
+            });
+            btnFtpLogin.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     String username = username_et.getText().toString();
@@ -57,6 +113,18 @@ public class RemoteManagerFragment extends Fragment {
                     String ip = username_ip.getText().toString();
                     String port = password_port.getText().toString();
                     login(username, password, ip, port);
+                }
+            });
+            btnFtpUpload.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    upload();
+                }
+            });
+            btnFtpDisConnect.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    disconnect();
                 }
             });
             Button btnChooseFile = view.findViewById(R.id.ftp_btn_choose);
@@ -70,12 +138,123 @@ public class RemoteManagerFragment extends Fragment {
                     FragmentManager manager = RemoteManagerFragment.this.getFragmentManager();
                     if (manager != null) {
                         FileSelectFragment newFragment = new FileSelectFragment();
+                        newFragment.setListener(RemoteManagerFragment.this);
                         newFragment.show(manager, "FileSelectFragment");
                     }
                 }
             });
         }
         return view;
+    }
+
+    private FTPClientFunctions ftpClient = new FTPClientFunctions();
+
+    private void returnParent() {
+        ThreadPool.getInstance().submit(new Runnable() {
+            @Override
+            public void run() {
+                ftpClient.ftpReturnParent();
+                List<FTPFile> list = ftpClient.ftpListCurrentFiles();
+                RemoteManagerFragment.this.onChangedDir(list);
+            }
+        });
+    }
+
+    private void disconnect() {
+        ThreadPool.getInstance().submit(new Runnable() {
+            @Override
+            public void run() {
+                ftpClient.ftpDisconnect();
+            }
+        });
+    }
+
+    private void upload() {
+        for (final File file : selectedFiles) {
+            ThreadPool.getInstance().submit(new Runnable() {
+                @Override
+                public void run() {
+                    String pwd = ftpClient.getCurrentWorkDirectory();
+                    boolean ret = ftpClient.ftpUpload(file.getAbsolutePath(), file.getName(), pwd);
+                    if (!ret) {
+                        Log.d(TAG, "ftpClient.ftpUploadFile error: " + file.getAbsolutePath());
+                    }
+                }
+            });
+        }
+    }
+
+    private void login(final String username, final String password, final String ip, final String port) {
+        ThreadPool.getInstance().submit(new Runnable() {
+            @Override
+            public void run() {
+                // TODO 可以首先去判断一下网络
+                boolean connectResult = ftpClient.ftpConnect(ip, username, password, Integer.valueOf(port));
+                if (connectResult) {
+                    RemoteManagerFragment.this.onLoginSucces();
+                } else {
+                    Log.w(TAG, "连接ftp服务器失败");
+                }
+            }
+        });
+    }
+
+    @Override
+    public void selectedFiles(Collection<File> files) {
+        selectedFiles.clear();
+        selectedFiles.addAll(files);
+    }
+
+    @Override
+    public void onConnected() {
+
+    }
+
+    @Override
+    public void onLoginSucces() {
+        Activity activity = this.getActivity();
+        if (activity != null) {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    RemoteManagerFragment.this.layoutFtpLoginPanel.setVisibility(View.GONE);
+                    RemoteManagerFragment.this.layoutServerDirPanel.setVisibility(View.VISIBLE);
+                }
+            });
+        }
+        changeDirectory("/");
+    }
+
+    private void changeDirectory(final String direcotry) {
+        ThreadPool.getInstance().submit(new Runnable() {
+            @Override
+            public void run() {
+                boolean changeDirResult = ftpClient.ftpChangeDir(direcotry);
+                if (changeDirResult) {
+                    List<FTPFile> list = ftpClient.ftpListCurrentFiles();
+                    RemoteManagerFragment.this.onChangedDir(list);
+                } else {
+                    Log.w(TAG, "切换ftp目录失败");
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onChangedDir(final List<FTPFile> list) {
+        Activity activity = this.getActivity();
+        if (activity != null) {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    RemoteManagerFragment.this.mCurDirAdapter.clear();
+                    for (FTPFile obj : list) {
+                        RemoteManagerFragment.this.mCurDirAdapter.add(obj.getName());
+                    }
+                    RemoteManagerFragment.this.mCurDirAdapter.notifyDataSetChanged();
+                }
+            });
+        }
     }
 
     @Override
@@ -102,38 +281,6 @@ public class RemoteManagerFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-    }
-
-    private void login(final String username, final String password, final String ip, final String port) {
-        ThreadPool.getInstance().submit(new Runnable() {
-            @Override
-            public void run() {
-                // TODO 可以首先去判断一下网络
-                FTPClientFunctions ftpClient = new FTPClientFunctions();
-                boolean connectResult = ftpClient.ftpConnect(ip, username, password, Integer.valueOf(port));
-                if (connectResult) {
-                    boolean changeDirResult = ftpClient.ftpChangeDir("/**");
-                    if (changeDirResult) {
-                        boolean uploadResult = ftpClient.ftpUpload("", "", "");
-                        if (uploadResult) {
-                            Log.w(TAG, "上传成功");
-                        } else {
-                            Log.w(TAG, "上传失败");
-                        }
-                    } else {
-                        Log.w(TAG, "切换ftp目录失败");
-                    }
-                    boolean disConnectResult = ftpClient.ftpDisconnect();
-                    if (disConnectResult) {
-                        Log.e(TAG, "关闭ftp连接成功");
-                    } else {
-                        Log.e(TAG, "关闭ftp连接失败");
-                    }
-                } else {
-                    Log.w(TAG, "连接ftp服务器失败");
-                }
-            }
-        });
     }
 
     @TargetApi(19)
@@ -241,4 +388,5 @@ public class RemoteManagerFragment extends Fragment {
     public boolean isMediaDocument(Uri uri) {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
+
 }

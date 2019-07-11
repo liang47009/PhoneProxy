@@ -26,4 +26,9 @@
         <item name="android:windowExitAnimation">@anim/shrink_fade_out_center</item>
     </style>
 
+    <style name="SubHeaderText">
+        <item name="android:textAppearance">@android:style/TextAppearance</item>
+        <item name="android:textColor">@color/colorPrimaryText</item>
+        <item name="android:singleLine">true</item>
+    </style>
 </resources>
