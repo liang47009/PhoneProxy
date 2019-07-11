@@ -37,7 +37,7 @@
     <string name="ok">确定</string>
     <string name="todo">TODO</string>
     <string name="ftp_btn_upload">上传</string>
-    <string name="ftp_btn_disconnect">退出</string>
+    <string name="ftp_btn_disconnect">登出</string>
     <string name="selected_files_list">已选择文件</string>
     <string name="current_dir_list">当前服务器目录</string>
     <string name="ftp_btn_return">返回上一级</string>

@@ -276,7 +276,6 @@ public class FTPClientFunctions {
                     listener.onFtpProgress(Constant.FTP_DOWN_LOADING, process, null);
                 }
             }
-
         }
         Log.i(TAG, "downloadSingleFile: 下载完毕");
         out.flush();

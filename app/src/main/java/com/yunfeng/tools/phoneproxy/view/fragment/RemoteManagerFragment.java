@@ -30,7 +30,10 @@ import androidx.fragment.app.FragmentManager;
 import com.yunfeng.tools.phoneproxy.R;
 import com.yunfeng.tools.phoneproxy.ftp.FTPClientFunctions;
 import com.yunfeng.tools.phoneproxy.util.ThreadPool;
+import com.yunfeng.tools.phoneproxy.view.custom.FtpFileAdapter;
+import com.yunfeng.tools.phoneproxy.view.custom.FtpFileItem;
 
+import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.File;
@@ -46,6 +49,10 @@ interface OnFtpOprationListener {
     void onChangedDir(List<FTPFile> list);
 }
 
+enum RemoteLocation {
+    FTP, LOCAL
+}
+
 public class RemoteManagerFragment extends Fragment implements OnSelectedFilesListener, OnFtpOprationListener {
 
     private static final String TAG = "RemoteManagerFragment";
@@ -55,8 +62,8 @@ public class RemoteManagerFragment extends Fragment implements OnSelectedFilesLi
     private ListView listSelFile;
     private LinkedList<File> selectedFiles = new LinkedList<>();
 
-    private ArrayAdapter<String> mCurDirAdapter;
-    private ArrayAdapter<String> mSelFilesAdapter;
+    private FtpFileAdapter mCurDirAdapter;
+    private FtpFileAdapter mSelFilesAdapter;
 
     public static RemoteManagerFragment newInstance() {
         return new RemoteManagerFragment();
@@ -80,12 +87,16 @@ public class RemoteManagerFragment extends Fragment implements OnSelectedFilesLi
             layoutServerDirPanel = view.findViewById(R.id.server_dir_panel);
 
             listCurDir = view.findViewById(R.id.current_dir_list);
-            mCurDirAdapter = new ArrayAdapter<>(view.getContext(), R.layout.simple_list_item_1);
+            mCurDirAdapter = new FtpFileAdapter(view.getContext(), R.layout.ftp_list_item);
             listCurDir.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    String itemData = parent.getAdapter().getItem(position).toString();
-                    RemoteManagerFragment.this.changeDirectory(itemData);
+                    FtpFileItem itemData = (FtpFileItem) parent.getAdapter().getItem(position);
+                    if (itemData.type == FTPFile.DIRECTORY_TYPE) {
+                        RemoteManagerFragment.this.changeDirectory(itemData.name);
+                    } else {
+
+                    }
                 }
             });
             listCurDir.setAdapter(mCurDirAdapter);
@@ -94,10 +105,25 @@ public class RemoteManagerFragment extends Fragment implements OnSelectedFilesLi
             listSelFile.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    FtpFileItem itemData = (FtpFileItem) parent.getAdapter().getItem(position);
+                    if (itemData.type == FTPFile.DIRECTORY_TYPE) {
+                        File file = new File(itemData.path);
+                        if (position == 0) {
+                            File parentFile = file.getParentFile();
+                            if (file.exists() && parentFile != null && parentFile.exists()) {
+                                RemoteManagerFragment.this.listFilesWithDir(parentFile);
+                            } else {
+                                RemoteManagerFragment.this.listFilesWithDir(Environment.getExternalStorageDirectory());
+                            }
+                        } else {
+                            RemoteManagerFragment.this.listFilesWithDir(file);
+                        }
+                    } else {
 
+                    }
                 }
             });
-            mSelFilesAdapter = new ArrayAdapter<>(view.getContext(), R.layout.simple_list_item_1);
+            mSelFilesAdapter = new FtpFileAdapter(view.getContext(), R.layout.ftp_list_item);
             listSelFile.setAdapter(mSelFilesAdapter);
             btnFtpReturn.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -143,8 +169,38 @@ public class RemoteManagerFragment extends Fragment implements OnSelectedFilesLi
                     }
                 }
             });
+            listFilesWithDir(Environment.getExternalStorageDirectory());
         }
         return view;
+    }
+
+    private void listFilesWithDir(File fileSrc) {
+        if (fileSrc != null && fileSrc.isDirectory()) {
+            mSelFilesAdapter.clear();
+            FtpFileItem root = new FtpFileItem();
+            root.name = "..";
+            root.path = fileSrc.getAbsolutePath();
+            root.type = FTPFile.DIRECTORY_TYPE;
+            mSelFilesAdapter.add(root);
+            File[] files = fileSrc.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    FtpFileItem item = new FtpFileItem();
+                    item.name = file.getName();
+                    item.size = String.valueOf(file.length());
+                    item.date = String.valueOf(file.lastModified());
+                    item.path = file.getAbsolutePath();
+                    item.prop = "";
+                    if (file.isDirectory()) {
+                        item.type = FTPFile.DIRECTORY_TYPE;
+                    } else {
+                        item.type = FTPFile.FILE_TYPE;
+                    }
+                    mSelFilesAdapter.add(item);
+                }
+            }
+            mSelFilesAdapter.notifyDataSetChanged();
+        }
     }
 
     private FTPClientFunctions ftpClient = new FTPClientFunctions();
@@ -165,6 +221,8 @@ public class RemoteManagerFragment extends Fragment implements OnSelectedFilesLi
             @Override
             public void run() {
                 ftpClient.ftpDisconnect();
+                RemoteManagerFragment.this.layoutFtpLoginPanel.setVisibility(View.VISIBLE);
+                RemoteManagerFragment.this.layoutServerDirPanel.setVisibility(View.GONE);
             }
         });
     }
@@ -249,7 +307,13 @@ public class RemoteManagerFragment extends Fragment implements OnSelectedFilesLi
                 public void run() {
                     RemoteManagerFragment.this.mCurDirAdapter.clear();
                     for (FTPFile obj : list) {
-                        RemoteManagerFragment.this.mCurDirAdapter.add(obj.getName());
+                        FtpFileItem item = new FtpFileItem();
+                        item.name = obj.getName();
+                        item.size = String.valueOf(obj.getSize());
+                        item.date = String.valueOf(obj.getTimestamp().getTimeInMillis());
+                        item.prop = obj.getUser();
+                        item.type = obj.getType();
+                        RemoteManagerFragment.this.mCurDirAdapter.add(item);
                     }
                     RemoteManagerFragment.this.mCurDirAdapter.notifyDataSetChanged();
                 }
