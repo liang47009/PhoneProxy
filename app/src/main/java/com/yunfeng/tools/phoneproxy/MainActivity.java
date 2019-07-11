@@ -189,8 +189,7 @@ public class MainActivity extends AppCompatActivity
         fragments.put(SETTINGS_FRAGMENT, SettingsFragment.newInstance());
         Hermes.setHermesListener(pf);
         changeFragment(PROXY_FRAGMENT);
-
-        showDialogInDifferentScreen();
+//        showDialogInDifferentScreen();
     }
 
     private void updateConfig(Context context) {
@@ -208,7 +207,7 @@ public class MainActivity extends AppCompatActivity
         if (mIsLargeLayout) {
             // The device is using a large layout, so show the fragment as a
             // dialog
-            newFragment.show(fragmentManager, "dialog");
+            newFragment.show(fragmentManager, "FileSelectFragment");
         } else {
             // The device is smaller, so show the fragment fullscreen
             FragmentTransaction transaction = fragmentManager.beginTransaction();

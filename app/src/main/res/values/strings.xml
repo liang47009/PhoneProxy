@@ -33,4 +33,7 @@
     <string name="ftp_tv_ip">ip地址</string>
     <string name="ftp_tv_port">端口</string>
     <string name="ftp_btn_choose">选择文件</string>
+    <string name="cancel">取消</string>
+    <string name="ok">确定</string>
+    <string name="todo">TODO</string>
 </resources>
