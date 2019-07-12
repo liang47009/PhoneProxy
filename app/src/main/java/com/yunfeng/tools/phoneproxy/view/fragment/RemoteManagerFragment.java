@@ -20,6 +20,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import androidx.annotation.NonNull;
@@ -29,7 +30,9 @@ import androidx.fragment.app.FragmentManager;
 
 import com.yunfeng.tools.phoneproxy.R;
 import com.yunfeng.tools.phoneproxy.ftp.FTPClientFunctions;
+import com.yunfeng.tools.phoneproxy.util.FileSortComparator;
 import com.yunfeng.tools.phoneproxy.util.ThreadPool;
+import com.yunfeng.tools.phoneproxy.util.TimeUtil;
 import com.yunfeng.tools.phoneproxy.view.custom.FtpFileAdapter;
 import com.yunfeng.tools.phoneproxy.view.custom.FtpFileItem;
 
@@ -87,7 +90,7 @@ public class RemoteManagerFragment extends Fragment implements OnSelectedFilesLi
             layoutServerDirPanel = view.findViewById(R.id.server_dir_panel);
 
             listCurDir = view.findViewById(R.id.current_dir_list);
-            mCurDirAdapter = new FtpFileAdapter(view.getContext(), R.layout.ftp_list_item);
+            mCurDirAdapter = new FtpFileAdapter(view.getContext(), R.layout.ftp_list_item, new LinkedList<FtpFileItem>());
             listCurDir.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -123,7 +126,7 @@ public class RemoteManagerFragment extends Fragment implements OnSelectedFilesLi
                     }
                 }
             });
-            mSelFilesAdapter = new FtpFileAdapter(view.getContext(), R.layout.ftp_list_item);
+            mSelFilesAdapter = new FtpFileAdapter(view.getContext(), R.layout.ftp_list_item, new LinkedList<FtpFileItem>());
             listSelFile.setAdapter(mSelFilesAdapter);
             btnFtpReturn.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -177,18 +180,13 @@ public class RemoteManagerFragment extends Fragment implements OnSelectedFilesLi
     private void listFilesWithDir(File fileSrc) {
         if (fileSrc != null && fileSrc.isDirectory()) {
             mSelFilesAdapter.clear();
-            FtpFileItem root = new FtpFileItem();
-            root.name = "..";
-            root.path = fileSrc.getAbsolutePath();
-            root.type = FTPFile.DIRECTORY_TYPE;
-            mSelFilesAdapter.add(root);
             File[] files = fileSrc.listFiles();
             if (files != null) {
                 for (File file : files) {
                     FtpFileItem item = new FtpFileItem();
                     item.name = file.getName();
                     item.size = String.valueOf(file.length());
-                    item.date = String.valueOf(file.lastModified());
+                    item.date = TimeUtil.formatTimeInMillis(file.lastModified());
                     item.path = file.getAbsolutePath();
                     item.prop = "";
                     if (file.isDirectory()) {
@@ -198,7 +196,13 @@ public class RemoteManagerFragment extends Fragment implements OnSelectedFilesLi
                     }
                     mSelFilesAdapter.add(item);
                 }
+                mSelFilesAdapter.sort(new FileSortComparator());
             }
+            FtpFileItem root = new FtpFileItem();
+            root.name = "..";
+            root.path = fileSrc.getAbsolutePath();
+            root.type = FTPFile.DIRECTORY_TYPE;
+            mSelFilesAdapter.insert(root, 0);
             mSelFilesAdapter.notifyDataSetChanged();
         }
     }
@@ -310,11 +314,12 @@ public class RemoteManagerFragment extends Fragment implements OnSelectedFilesLi
                         FtpFileItem item = new FtpFileItem();
                         item.name = obj.getName();
                         item.size = String.valueOf(obj.getSize());
-                        item.date = String.valueOf(obj.getTimestamp().getTimeInMillis());
+                        item.date = TimeUtil.formatTimeInMillis(obj.getTimestamp().getTimeInMillis());
                         item.prop = obj.getUser();
                         item.type = obj.getType();
                         RemoteManagerFragment.this.mCurDirAdapter.add(item);
                     }
+                    mCurDirAdapter.sort(new FileSortComparator());
                     RemoteManagerFragment.this.mCurDirAdapter.notifyDataSetChanged();
                 }
             });
